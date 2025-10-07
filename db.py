@@ -5,6 +5,7 @@ from datetime import date
 con = MongoClient('mongodb+srv://arth1022:H&soyam01@caixacerto.c4y3jgg.mongodb.net/')
 db = con.get_database("pizzaria")
 colecao = db.get_collection("produtos")
+money = db.get_collection("gastos/lucros")
 
 #Variaveis Globais#
 today = date.today()
@@ -47,4 +48,28 @@ def remover():
     if veri == "1": 
         colecao.delete_one({'nome': nome})
 
-remover()
+def geymoney():
+    nomeadd = input("Digite o nome do produto para buscar o custo: ")
+    produto = colecao.find_one({'nome': nomeadd})
+    gasto = produto['custo/gasto']                                      #Valor do produto
+    print(gasto)
+    insert = {
+        '$':gasto
+    }
+    money.insert_one(insert)
+
+def calcmensal():
+    dados = list(money.find())
+    print(dados)
+    listaint = []
+    for iten in dados:
+        valor = iten.get('$')
+        if isinstance(valor,(int,float)):           #Calcula todos os itens da categoria gastos/lucros
+            listaint.append(valor)
+    print(listaint)
+    calculadora = 0
+    for d in listaint:
+        calculadora += d
+    print(calculadora)
+
+calcmensal()
