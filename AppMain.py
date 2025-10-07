@@ -39,16 +39,23 @@ class HomeFrame(tk.Frame):
         tk.Label(text_frame,text="GASTOS:",fg = 'red', font=('Arial', 14, 'bold')).pack(anchor='w', pady=(10, 5))
         tk.Label(text_frame,text="TOTAL MENSAL:",font=('Arial', 14, 'bold') ).pack(anchor='w', pady=(10, 5))
         
-        def calcula(self):
-            lista_gastos = list(money.find())
-            lucro = []
-            gasto = []
-            total = sum(lista_gastos)
-            for qt in lista_gastos:
-                if qt < 0:
-                    gasto.append(qt)
-                else:
-                    lucro.append(qt)
+    def calcula():
+        lista_gastos = list(money.find())
+        total = 0
+        lucro = 0
+        gasto = 0
+        for i in lista_gastos:             #####Precisa ser implementado#######
+            valor = i.get('$')
+            total += valor
+            if valor <0:
+                gasto += valor
+            else:
+                lucro +=valor
+                    
+        print(total)
+        print(lucro)
+        print(gasto)
+            
 
 
 class CadastroFrame(tk.Frame): # TELA DE CADASTRO
