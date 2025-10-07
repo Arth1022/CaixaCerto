@@ -9,9 +9,9 @@ from tkinter import messagebox
 con = MongoClient('mongodb+srv://arth1022:H&soyam01@caixacerto.c4y3jgg.mongodb.net/')
 db = con.get_database("pizzaria")
 colecao = db.get_collection("produtos")
+money = db.get_collection("gastos/lucros")
 
 #Variaveis Globais#
-today = date.today()
 
 # =================================================================
 # 1. TELAS (FRAMES)
@@ -38,6 +38,17 @@ class HomeFrame(tk.Frame):
         tk.Label(text_frame,text="LUCROS:", fg='green', font=('Arial', 14, 'bold')).pack(anchor='w', pady=(10, 5))
         tk.Label(text_frame,text="GASTOS:",fg = 'red', font=('Arial', 14, 'bold')).pack(anchor='w', pady=(10, 5))
         tk.Label(text_frame,text="TOTAL MENSAL:",font=('Arial', 14, 'bold') ).pack(anchor='w', pady=(10, 5))
+        
+        def calcula(self):
+            lista_gastos = list(money.find())
+            lucro = []
+            gasto = []
+            total = sum(lista_gastos)
+            for qt in lista_gastos:
+                if qt < 0:
+                    gasto.append(qt)
+                else:
+                    lucro.append(qt)
 
 
 class CadastroFrame(tk.Frame): # TELA DE CADASTRO
@@ -80,22 +91,27 @@ class CadastroFrame(tk.Frame): # TELA DE CADASTRO
     def enviarDados(self):
 
         recebercusto = self.entry_custo.get()
+        recebercusto = int(recebercusto)
+
+
         recebertipo = self.entrada_saida_var.get()
         receberdescri = self.entry_descricao.get()
         receberpedi = self.entry_pedido.get()
         if recebertipo == False:
-            tipo = recebertipo - (recebertipo *2)
-
+            custoreal = recebercusto - (recebercusto *2)
+        else:
+            custoreal = recebercusto
         receberdata =  self.data_auto_var.get()
         if receberdata == True:
-            data = today.strftime('%d/%m/%Y')
+            data = date.today()
+            data = str(data)
         else:
             data  = "Joao ainda nao fez o entry da data" 
 
         recebernome = self.entry_nome.get()   
         prod = {
         'nome':recebernome,
-        'custo/gasto':recebercusto,
+        'custo':custoreal,
         'data':data,
         "descrição":receberdescri,
         "pedido":receberpedi,
@@ -135,11 +151,73 @@ class ProdutosFrame(tk.Frame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         
-        tk.Label(self, text="Gestão de Produtos", font=('Arial', 18, 'bold')).pack(pady=20)
-        
-        tk.Label(self, text="Lista de Produtos em Estoque").pack(pady=10)
-        
-        ttk.Button(self, text="Adicionar Novo Produto", command=lambda: messagebox.showinfo("Ação", "Abrindo formulário de produto...")).pack(pady=15)
+        #AINDA A FAZER : Fazer uma lista de produtos para que seja mostrado no program#
+
+        #Campo Editar
+        tk.Label(self,text='Editar Produto',font=('Arial', 12, 'bold')).pack(pady=0,anchor='w')
+        tk.Label(self,text='Nome:').pack(pady=0,anchor='w')
+        self.entry_enome = tk.Entry(self)
+        self.entry_enome.pack(pady=0,anchor='w')
+        tk.Label(self,text='Campo a ser editado::').pack(pady=0,anchor='w')
+        self.entry_campo = tk.Entry(self,width=10)
+        self.entry_campo.pack(pady=0,anchor='w')
+        tk.Label(self,text='Edição:').pack(pady=0,anchor='w')
+        self.entry_editor = tk.Entry(self,width=10)
+        self.entry_editor.pack(pady=0,anchor='w')
+
+        self.button_editar = tk.Button(self,text='Confirmar',command=self.editar,fg='green').pack(pady=0,anchor='w')
+
+        #Campo Deletar
+        tk.Label(self,text='Excluir Produto',font=('Arial', 12, 'bold')).pack(pady=0,anchor='w')
+        tk.Label(self,text='Nome:').pack(pady=0,anchor='w')
+        self.entry_exnome = tk.Entry(self)
+        self.entry_exnome.pack(pady=0,anchor='w')
+
+        self.button_excluir = tk.Button(self,text='Confirmar',command=self.delete,fg='red').pack(pady=2,anchor='w')
+
+        tk.Label(self,text='AQUI VAI A LISTA DE PRODUTOS JA ADICIONADOS').pack(pady=0)       ########FAÇA AQUI UM SISTEMA DE ROLAGEM PARA COLOCAR OS PRODUTOS, 
+                                                                                           ###TKINTER NAO TEM UMA LABEL NATIVA, MAIS E POSSIVEL FAZER USANDO WIDGET################
+        #Adicionar venda/compra
+        tk.Label(self, text='Adicionar Venda/Compra').pack(pady=5,side='left')
+        self.entry_nproduto = tk.Entry(self, width=20, )
+        self.entry_nproduto.pack(pady=10,side='left')
+
+        tk.Button(self,text='Confirmar',fg='green',command=self.getmoney).pack(pady=2,side='left')
+
+    def getmoney(self):
+        nomeadd = self.entry_nproduto.get()
+        produto = colecao.find_one({'nome': nomeadd})
+        gasto = produto['custo']  
+        insert = {
+            '$':gasto
+        }
+        self.entry_nproduto.delete(0, tk.END)
+        money.insert_one(insert)
+
+    def delete(self):
+        nome = self.entry_exnome.get()
+        colecao.delete_one({'nome':nome})
+        self.limparForms
+    
+
+    def editar(self):
+        nome = self.entry_enome.get()
+        campo = self.entry_campo.get()
+        editor = self.entry_editor.get()                                             #####Editar######
+        if campo.lower() == 'custo':
+            editor = float(editor)
+        colecao.update_one({'nome':nome},{"$set":{campo:editor}})
+        self.limparForms
+    
+    def limparForms(self):
+
+        self.entry_campo.delete(0,tk.END)
+        self.entry_enome.delete(0,tk.END)
+        self.entry_editor.delete(0,tk.END)
+        self.entry_enome.focus_set()
+
+
+
 
 
 # =================================================================
@@ -149,7 +227,7 @@ class ProdutosFrame(tk.Frame):
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Sistema Tkinter - Navegação com Gráfico")
+        self.title("Sistema CaixaCerto")
         self.geometry("800x500")
         
         # Configuração do Grid principal (Menu e Conteúdo)
