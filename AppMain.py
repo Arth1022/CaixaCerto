@@ -15,19 +15,57 @@ class HomeFrame(ttk.Frame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         
+        self.gasto_var = tk.StringVar()
+        self.lucro_var = tk.StringVar()
+        self.total_var = tk.StringVar()
+
         text_frame = ttk.Frame(self)
-        text_frame.grid(row=0, column=0, sticky="nsw", padx=20, pady=20)
+        text_frame.grid(row=0, column=0, sticky="we", padx=20, pady=20)
+        relatorio_frame = ttk.Frame(self)
+        relatorio_frame.grid(row=2,column=0,sticky='w')
+        add_box = ttk.LabelFrame(self,text='Adicionar Venda/Compra',padding=10)
+        add_box.grid(row=1, column=0, pady=2, sticky='w')
         self.calcula()
 
-        ttk.Label(text_frame, text="Seja Bem-vindo ao Sistema!", font=('Arial', 18, 'bold')).pack(anchor='w', pady=(0, 5))
-        ttk.Label(text_frame, text="Patos Pizzas.", font=('Arial', 12, 'bold')).pack(anchor='w', pady=(0, 20))
+        add_box.columnconfigure(0,weight=1)
+        add_box.columnconfigure(1,weight=1)
+
+        ttk.Label(text_frame, text="Seja Bem-vindo ao Sistema!", font=('Arial', 18, 'bold')).grid(row=0,column=0)
         
-        ttk.Label(text_frame, text="Resumo Semanal:", font=('Arial', 14, 'bold')).pack(anchor='w', pady=(10, 5))
+        ttk.Label(add_box, text='Nome do Produto:').grid(column=0)
+        self.entry_nproduto = ttk.Entry(add_box, width=14)
+        self.entry_nproduto.grid(row=0,column=1)
+
+        ttk.Button(add_box, text='Confirmar', style='Green.TButton', command=self.getmoney).grid(row=2,column=1,pady=5)
+
+        ttk.Label(text_frame, text="Resumo Semanal:", font=('Arial', 14, 'bold')).grid(row=1,column=0)
         
-        ttk.Label(text_frame, text=f"LUCROS:{self.int_lucro} ", style='Green.TLabel', font=('Arial', 14, 'bold')).pack(anchor='w', pady=(10, 5))
-        ttk.Label(text_frame, text=f"GASTOS:{self.int_gasto}", style='Red.TLabel', font=('Arial', 14, 'bold')).pack(anchor='w', pady=(10, 5))
-        ttk.Label(text_frame, text=f"TOTAL MENSAL:{self.int_total}", style='Blue.TLabel', font=('Arial', 14, 'bold')).pack(anchor='w', pady=(10, 5))
+        custo_frame = ttk.LabelFrame(relatorio_frame,text='')
+        custo_frame.grid(row=0,column=0)
+        ttk.Label(custo_frame,text='Gastos:',font=('Arial',12,'bold')).grid(row=0,column=0,pady=2)
+        ttk.Label(custo_frame,textvariable=self.gasto_var,font=('Arial',12,'bold')).grid(row=0,column=1,pady=2)
         
+        lucros_frame = ttk.LabelFrame(relatorio_frame,text='')
+        lucros_frame.grid(row=1,column=0)
+        ttk.Label(lucros_frame,text='Vendas:',font=('Arial',12,'bold')).grid(row=0,column=0,pady=2)
+        ttk.Label(lucros_frame,textvariable=self.lucro_var,font=('Arial',12,'bold')).grid(row=0,column=1,pady=2)
+
+        total_frame = ttk.LabelFrame(relatorio_frame,text='')
+        total_frame.grid(row=2 ,column=0)
+        ttk.Label(total_frame,text='Total:',font=('Arial',12,'bold',),foreground='Blue').grid(row=0,column=0,pady=2)
+        ttk.Label(total_frame,textvariable=self.total_var,font=('Arial',12,'bold',),foreground='Blue').grid(row=0,column=2,pady=2)
+    
+    def getmoney(self):
+        nomeadd = self.entry_nproduto.get()
+        produto = colecao.find_one({'nome': nomeadd})
+        gasto = produto['custo']
+        insert = {
+            '$': gasto
+        }
+        money.insert_one(insert)
+        self.calcula()
+        self.entry_nproduto.delete(0, tk.END)
+
     def calcula(self):
         lista_gastos = list(money.find())
         total = 0
@@ -43,6 +81,10 @@ class HomeFrame(ttk.Frame):
         self.int_lucro = lucro
         self.int_gasto = gasto
         self.int_total = total
+
+        self.gasto_var.set(f'R$ {self.int_gasto}')
+        self.lucro_var.set(f'R$ {self.int_lucro}')
+        self.total_var.set(f'R$ {self.int_total}')
 
 class CadastroFrame(ttk.Frame):
     def __init__(self, master, **kwargs):
@@ -90,7 +132,7 @@ class CadastroFrame(ttk.Frame):
         self.entry_pedido = ttk.Entry(pedido_box, width=20)
         self.entry_pedido.grid(row=0, column=1, pady=5, sticky='ew')
 
-        ttk.Button(self, text='Confirmar registro', command=self.enviarDados).grid(row=8, column=0, columnspan=2, pady=10)
+        ttk.Button(self, text='Confirmar registro', command=self.enviarDados).grid(row=9, column=0, columnspan=2, pady=10,sticky='w')
 
     def enviarDados(self):
         recebercusto = self.entry_custo.get()
@@ -143,7 +185,91 @@ class RelatorioFrame(ttk.Frame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         
-        ttk.Label(self, text="Relatório Gerencial", font=('Arial', 18, 'bold')).pack(pady=20)
+        ttk.Label(self, text="                              Relatório Gerencial", font=('Arial', 18, 'bold')).grid(row=0,column=0,sticky='we',columnspan='3')
+
+        self.columnconfigure(0,weight=1)
+
+        self.gasto_var = tk.StringVar()
+        self.lucro_var = tk.StringVar()
+        self.total_var = tk.StringVar()
+
+        container_dados = ttk.Frame(self)
+        container_dados.grid(row=2,column=0)
+        container_dados.columnconfigure(0,weight=100)
+        container_dados.columnconfigure(1,weight=100)
+        container_dados.columnconfigure(2,weight=100)
+
+        container_tabela = ttk.Frame(self)
+        container_tabela.grid(row=1,column=0)
+
+        container_tabela.rowconfigure(0,weight=1)
+        container_tabela.columnconfigure(0,weight=1)
+
+        colunas = ('nome','custo', 'data')
+        self.tabela_relatorio = ttk.Treeview(container_tabela,columns=colunas,show='headings' )
+        self.tabela_relatorio.grid(row=0,column=0)
+        escrolar = ttk.Scrollbar(container_tabela,orient='vertical')
+        escrolar.grid(row=0,column=1,sticky='ns')
+
+        self.tabela_relatorio.config(yscrollcommand=escrolar.set)
+        escrolar.config(command=self.tabela_relatorio.yview)
+
+        self.tabela_relatorio.heading('nome',text='NOME')
+        self.tabela_relatorio.heading('custo',text='CUSTO')
+        self.tabela_relatorio.heading('data',text='DATA')
+
+        self.tabela_relatorio.column('nome',width=200)
+        self.tabela_relatorio.column('custo',width=200,anchor='center')
+        self.tabela_relatorio.column('data',width=200,anchor='center')
+
+        self.informacoesTabela()
+        self.calcula()
+
+        custo_frame = ttk.LabelFrame(container_dados,text='GASTOS')
+        custo_frame.grid(row=0,column=0)
+        ttk.Label(custo_frame,textvariable=self.gasto_var,font=('Arial',12,'bold'),foreground='red').grid(row=0,column=0,pady=10)
+        
+        lucros_frame = ttk.LabelFrame(container_dados,text='LUCROS')
+        lucros_frame.grid(row=0,column=1)
+        ttk.Label(lucros_frame,textvariable=self.lucro_var,font=('Arial',12,'bold'),foreground='green').grid(row=0,column=1,pady=10)
+
+        total_frame = ttk.LabelFrame(container_dados,text='TOTAL')
+        total_frame.grid(row=0,column=2)
+        ttk.Label(total_frame,textvariable=self.total_var,font=('Arial',12,'bold',),foreground='Blue').grid(row=0,column=2,pady=10)
+        ttk.Button(container_dados,text='Atualizar',command=self.atualiza).grid(row=1,column=2)
+        
+        
+
+
+    def atualiza(self):
+        self.calcula()
+        self.informacoesTabela()
+    def calcula(self):
+        lista_gastos = list(money.find())
+        total = 0
+        lucro = 0
+        gasto = 0
+        for i in lista_gastos:
+            valor = i.get('$')
+            total += valor
+            if valor < 0:
+                gasto += valor
+            else:
+                lucro += valor
+        self.int_lucro = lucro
+        self.int_gasto = gasto
+        self.int_total = total
+        self.gasto_var.set(f'R$ {self.int_gasto}')
+        self.lucro_var.set(f'R$ {self.int_lucro}')
+        self.total_var.set(f'R$ {self.int_total}')    
+
+    def informacoesTabela(self):
+        dados = list(colecao.find({}))
+        for i in dados:
+            nome = i.get('nome', '')
+            custo = i.get('custo', '')
+            data = i.get('data', '')
+            self.tabela_relatorio.insert('', 'end', values=(nome, custo, data))
         
         
 
@@ -174,8 +300,6 @@ class ProdutosFrame(ttk.Frame):
         self.tabelap.bind("<<TreeviewSelect>>", self.itemSelecionado) #Treeview e a funcao pornta que faz o evento acontecer ao clicar na tabela
 
 
-        add_box = ttk.LabelFrame(main_labelframe,text='Adicionar Gasto/Ganho',padding=10)
-        add_box.grid(row=0, column=0, pady=2, sticky='n')
 
         editar_box = ttk.LabelFrame(main_labelframe,text='Editar Produto',padding=10)
         editar_box.grid(row=0, column=1, pady=2, sticky='n')
@@ -206,7 +330,7 @@ class ProdutosFrame(ttk.Frame):
 
         ttk.Button( delete_box, text='Confirmar', command=self.delete, style='Red.TButton').grid(row=2, column=1, pady=5, sticky='w')
 
-        ttk.Label(self, text='AQUI VAI A LISTA DE PRODUTOS JA ADICIONADOS').grid(row=9, column=0, columnspan=3, pady=10)
+        ttk.Button(self, text='Atualizar Tabela',command=self.informacoesTabela).grid(row=9, column=0, columnspan=3, pady=10)
 
         self.tabelap.heading('Nome',text='Nome do Produto')
         self.tabelap.heading('Custo',text='Custo/Preço')                         #.heading() mexe no título da coluna.
@@ -224,13 +348,6 @@ class ProdutosFrame(ttk.Frame):
 
         self.tabelap.grid(row=0,column=0,sticky='nsew',) #nsew vai fazer ela ocupar todo espaco disponivel no grid mas nao ta funcinando esta bucet
   
-        ttk.Label(add_box, text='Nome:').grid(column=0)
-        self.entry_nproduto = ttk.Entry(add_box, width=8)
-        self.entry_nproduto.grid(row=0,column=1)
-
-        ttk.Button(add_box, text='Confirmar', style='Green.TButton', command=self.getmoney).grid(row=2,column=1,pady=5)
-
-
 
     def itemSelecionado(self, event): #event e necessario para a funcao de evento funcionar
         itemsele = self.tabelap.focus() #focus faz dar return no id da linha
@@ -252,16 +369,6 @@ class ProdutosFrame(ttk.Frame):
             peidod = i['pedido']
             self.tabelap.insert('',index='end',values = (nome,custo,data,descr,peidod,))
 
-
-    def getmoney(self):
-        nomeadd = self.entry_nproduto.get()
-        produto = colecao.find_one({'nome': nomeadd})
-        gasto = produto['custo']
-        insert = {
-            '$': gasto
-        }
-        money.insert_one(insert)
-        self.entry_nproduto.delete(0, tk.END)
 
     def delete(self):
         nome = self.entry_exnome.get()
