@@ -1,127 +1,130 @@
 import tkinter as tk
-from tkinter import ttk 
-from tkinter import messagebox 
+from tkinter import ttk
+from ttkthemes import ThemedTk
 from pymongo import MongoClient
 from datetime import date
 from tkinter import messagebox
 
-#conexão#
 con = MongoClient('mongodb+srv://arth1022:H&soyam01@caixacerto.c4y3jgg.mongodb.net/')
 db = con.get_database("pizzaria")
 colecao = db.get_collection("produtos")
 money = db.get_collection("gastos/lucros")
 
-#Variaveis Globais#
 
-# =================================================================
-# 1. TELAS (FRAMES)
-# =================================================================
-
-class HomeFrame(tk.Frame):
-    """Tela Inicial:"""
+class HomeFrame(ttk.Frame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         
-        # Grid para dividir a tela em 2 colunas: Textos (0) e Gráfico (1)
-        self.columnconfigure(0, weight=1) # Coluna 0 (textos) se expande
-        self.columnconfigure(1, weight=0) # Coluna 1 (gráfico) não se expande
-        
-        # --- FRAME para Textos e Boas-Vindas (Coluna 0) ---
-        text_frame = tk.Frame(self)
+        text_frame = ttk.Frame(self)
         text_frame.grid(row=0, column=0, sticky="nsw", padx=20, pady=20)
+        self.calcula()
+
+        ttk.Label(text_frame, text="Seja Bem-vindo ao Sistema!", font=('Arial', 18, 'bold')).pack(anchor='w', pady=(0, 5))
+        ttk.Label(text_frame, text="Patos Pizzas.", font=('Arial', 12, 'bold')).pack(anchor='w', pady=(0, 20))
         
-        tk.Label(text_frame, text="Seja Bem-vindo ao Sistema!", font=('Arial', 18, 'bold')).pack(anchor='w', pady=(0, 5))
-        tk.Label(text_frame, text="Patos Pizzas.", font=('Arial', 12, 'bold')).pack(anchor='w', pady=(0, 20))
+        ttk.Label(text_frame, text="Resumo Semanal:", font=('Arial', 14, 'bold')).pack(anchor='w', pady=(10, 5))
         
-        tk.Label(text_frame, text="Resumo Semanal:", font=('Arial', 14, 'bold')).pack(anchor='w', pady=(10, 5))
+        ttk.Label(text_frame, text=f"LUCROS:{self.int_lucro} ", style='Green.TLabel', font=('Arial', 14, 'bold')).pack(anchor='w', pady=(10, 5))
+        ttk.Label(text_frame, text=f"GASTOS:{self.int_gasto}", style='Red.TLabel', font=('Arial', 14, 'bold')).pack(anchor='w', pady=(10, 5))
+        ttk.Label(text_frame, text=f"TOTAL MENSAL:{self.int_total}", style='Blue.TLabel', font=('Arial', 14, 'bold')).pack(anchor='w', pady=(10, 5))
         
-        tk.Label(text_frame,text="LUCROS:", fg='green', font=('Arial', 14, 'bold')).pack(anchor='w', pady=(10, 5))
-        tk.Label(text_frame,text="GASTOS:",fg = 'red', font=('Arial', 14, 'bold')).pack(anchor='w', pady=(10, 5))
-        tk.Label(text_frame,text="TOTAL MENSAL:",font=('Arial', 14, 'bold') ).pack(anchor='w', pady=(10, 5))
-        
-    def calcula():
+    def calcula(self):
         lista_gastos = list(money.find())
         total = 0
         lucro = 0
         gasto = 0
-        for i in lista_gastos:             #####Precisa ser implementado#######
+        for i in lista_gastos:
             valor = i.get('$')
             total += valor
-            if valor <0:
+            if valor < 0:
                 gasto += valor
             else:
-                lucro +=valor
-                    
-        print(total)
-        print(lucro)
-        print(gasto)
-            
+                lucro += valor
+        self.int_lucro = lucro
+        self.int_gasto = gasto
+        self.int_total = total
 
-
-class CadastroFrame(tk.Frame): # TELA DE CADASTRO
-   
-
+class CadastroFrame(ttk.Frame):
     def __init__(self, master, **kwargs):
-
-        self.entrada_saida_var = tk.BooleanVar() # true ou false
-        self.data_auto_var = tk.BooleanVar()
 
         super().__init__(master, **kwargs)
         
-        tk.Label(self, text="Cadastro de Produto", font=('Arial', 18, 'bold')).pack(pady=10)
+        self.entrada_var = tk.BooleanVar()
+        self.saida_var = tk.BooleanVar()   #Variantes dos checkbox
+        self.data_auto_var = tk.BooleanVar(value=True)
         
-        tk.Label(self, text="Selecioner tipo de cadastro [Marcado]Entrada | [Em Branco]Saida").pack(pady=10,anchor='w')
-        tk.Checkbutton(self,text='Entrada/Saida',variable=self.entrada_saida_var).pack(pady=10, anchor='w') # add um popup para que tenha um entry para escrever a data(Da teu jeito ae joao)
-
-        tk.Checkbutton(self,text='Data Automatica',variable=self.data_auto_var).pack(pady=0,anchor='w')
-
+        self.grid_columnconfigure(1, weight=1) #Tamanho da coluna om primeiro argumento e a coluna
+        nome_box = ttk.LabelFrame(self,text='Nome')
+        nome_box.grid(row=5, column=1, pady=5, sticky='ew')
 
 
-        tk.Label(self,text='Nome:').pack(pady=0,anchor='w')
-        self.entry_nome = tk.Entry(self,width=20)
-        self.entry_nome.pack(pady=0,anchor='w')
+        pedido_box = ttk.LabelFrame(self, text='Pedido',)
+        pedido_box.grid(row=6, column=1, pady=5, sticky='ew')
 
-        tk.Label(self,text='Custo/Gasto:').pack(pady=0,anchor='w')
-        self.entry_custo = tk.Entry(self,width=20)
-        self.entry_custo.pack(pady=0,anchor='w')
+        cust_box = ttk.LabelFrame(self,text='Custo/Gasto')
+        cust_box.grid(row=7, column=1, pady=5, sticky='ew')
 
-        tk.Label(self,text='Descrição:').pack(pady=0,anchor='w')
-        self.entry_descricao = tk.Entry(self,width=40,)
-        self.entry_descricao.pack(pady=0,anchor='w')
+        desc_box = ttk.LabelFrame(self,text='Descrição')
+        desc_box.grid(row=8, column=1, pady=5, sticky='ew')
 
-        tk.Label(self,text='Pedido:').pack(pady=0,anchor='w')
-        self.entry_pedido = tk.Entry(self,width=40)
-        self.entry_pedido.pack(pady=0,anchor='w')
 
-        tk.Button(self,text='Confirmar registro',font=('Arial', 12, 'bold'),width=30,command=self.enviarDados).pack(pady=10,)
+        ttk.Label(self, text="                            Cadastro de Produto", font=('Arial', 18, 'bold')).grid(
+            row=0, column=0, columnspan=2, pady=10, sticky='w')
+        
+        
+        ttk.Label(self, text="Tipo de cadastro:",font=('Arial', 13, 'bold')).grid(row=1, column=0, columnspan=2, pady=(10,0), sticky='w')
+        ttk.Checkbutton(self, text='Entrada', variable=self.entrada_var).grid(row=2, column=0, columnspan=2, pady=5, sticky='w')
+        ttk.Checkbutton(self, text='Saida', variable=self.saida_var).grid(row=3, column=0, columnspan=2, pady=5, sticky='w')
+
+        ttk.Checkbutton(self, text='Data Automatica', variable=self.data_auto_var).grid(row=4, column=0, columnspan=2, pady=5, sticky='w')
+
+        self.entry_nome = ttk.Entry(nome_box, width=20)
+        self.entry_nome.grid(row=0, column=1, pady=5, sticky='ew')
+
+        self.entry_custo = ttk.Entry(cust_box, width=20)
+        self.entry_custo.grid(row=0, column=1, pady=5, sticky='ew')
+
+        self.entry_descricao = ttk.Entry(desc_box, width=20)
+        self.entry_descricao.grid(row=0, column=1, pady=5, sticky='ew')
+
+        self.entry_pedido = ttk.Entry(pedido_box, width=20)
+        self.entry_pedido.grid(row=0, column=1, pady=5, sticky='ew')
+
+        ttk.Button(self, text='Confirmar registro', command=self.enviarDados).grid(row=8, column=0, columnspan=2, pady=10)
 
     def enviarDados(self):
-
         recebercusto = self.entry_custo.get()
         recebercusto = int(recebercusto)
 
+        recebertipo = self.entrada_var.get()
+        recebertipo2 = self.saida_var.get()
 
-        recebertipo = self.entrada_saida_var.get()
         receberdescri = self.entry_descricao.get()
         receberpedi = self.entry_pedido.get()
-        if recebertipo == False:
-            custoreal = recebercusto - (recebercusto *2)
-        else:
+
+        if recebertipo == True and recebertipo2 == True or recebertipo == False and recebertipo2 == False:
             custoreal = recebercusto
-        receberdata =  self.data_auto_var.get()
+            custoreal = 0
+        elif recebertipo2 == True:
+            custoreal = recebercusto - (recebercusto * 2)
+        elif recebertipo == True:
+            custoreal = recebercusto
+        
+        receberdata = self.data_auto_var.get()
+
         if receberdata == True:
             data = date.today()
             data = str(data)
         else:
-            data  = "Joao ainda nao fez o entry da data" 
+            data = "Joao ainda nao fez o entry da data"
 
-        recebernome = self.entry_nome.get()   
+        recebernome = self.entry_nome.get()
         prod = {
-        'nome':recebernome,
-        'custo':custoreal,
-        'data':data,
-        "descrição":receberdescri,
-        "pedido":receberpedi,
+            'nome': recebernome,
+            'custo': custoreal,
+            'data': data,
+            "descrição": receberdescri,
+            "pedido": receberpedi,
         }
         colecao.insert_one(prod)
         self.limparForms()
@@ -130,148 +133,195 @@ class CadastroFrame(tk.Frame): # TELA DE CADASTRO
         self.entry_nome.delete(0, tk.END)
         self.entry_descricao.delete(0, tk.END)
         self.entry_pedido.delete(0, tk.END)
-        
-        #Adicionada a limpeza do campo de custo.
         self.entry_custo.delete(0, tk.END)
-
-        #Reseta os Checkbuttons para o estado padrão
-        self.entrada_saida_var.set(False)
-        self.data_auto_var.set(True) # Volta a ser marcado por padrão
-        
-        #Opcional: Coloca o foco de volta no primeiro campo
+        self.entrada_var.set(False)
+        self.saida_var.set(False)
+        self.data_auto_var.set(True)
         self.entry_nome.focus_set()
 
-
-
-class RelatorioFrame(tk.Frame):
-    """Tela de Relatório: Visualização de dados."""
+class RelatorioFrame(ttk.Frame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         
-        tk.Label(self, text="Relatório Gerencial", font=('Arial', 18, 'bold')).pack(pady=20)
-        
-        tk.Label(self, text="<< Conteúdo de Relatórios e Gráficos Aqui >>").pack(pady=30)
+        ttk.Label(self, text="Relatório Gerencial", font=('Arial', 18, 'bold')).pack(pady=20)
         
         
-class ProdutosFrame(tk.Frame):
-    """Tela de Produtos: Listagem e Gestão."""
+
+        
+class ProdutosFrame(ttk.Frame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         
-        #AINDA A FAZER : Fazer uma lista de produtos para que seja mostrado no program#
+        self.grid_columnconfigure(1, weight=1) # Configura o tamanho das colunas do grid
 
-        #Campo Editar
-        tk.Label(self,text='Editar Produto',font=('Arial', 12, 'bold')).pack(pady=0,anchor='w')
-        tk.Label(self,text='Nome:').pack(pady=0,anchor='w')
-        self.entry_enome = tk.Entry(self)
-        self.entry_enome.pack(pady=0,anchor='w')
-        tk.Label(self,text='Campo a ser editado::').pack(pady=0,anchor='w')
-        self.entry_campo = tk.Entry(self,width=10)
-        self.entry_campo.pack(pady=0,anchor='w')
-        tk.Label(self,text='Edição:').pack(pady=0,anchor='w')
-        self.entry_editor = tk.Entry(self,width=10)
-        self.entry_editor.pack(pady=0,anchor='w')
+        main_labelframe = ttk.Frame(self)
+        main_labelframe.grid(column=0,row=0,pady=3,columnspan=3)
+        tabela_frame = ttk.Frame(self)
+        tabela_frame.grid(row=1,column=0,columnspan=2,sticky="nsew",padx=10,pady=10)
 
-        self.button_editar = tk.Button(self,text='Confirmar',command=self.editar,fg='green').pack(pady=0,anchor='w')
+        tabela_frame.grid_rowconfigure(0, weight=1)
+        tabela_frame.grid_columnconfigure(0, weight=1)
 
-        #Campo Deletar
-        tk.Label(self,text='Excluir Produto',font=('Arial', 12, 'bold')).pack(pady=0,anchor='w')
-        tk.Label(self,text='Nome:').pack(pady=0,anchor='w')
-        self.entry_exnome = tk.Entry(self)
-        self.entry_exnome.pack(pady=0,anchor='w')
+        colunas = ('Nome','Custo','Data','Descrição','Pedido')
+        self.tabelap = ttk.Treeview(tabela_frame,columns=colunas,show='headings') #tabela
+        escrolar = ttk.Scrollbar(tabela_frame,orient='vertical')
 
-        self.button_excluir = tk.Button(self,text='Confirmar',command=self.delete,fg='red').pack(pady=2,anchor='w')
+        #Config
+        self.tabelap.config(yscrollcommand=escrolar.set)
+        escrolar.config(command=self.tabelap.yview)           #conexao tabela e barra de scroll
 
-        tk.Label(self,text='AQUI VAI A LISTA DE PRODUTOS JA ADICIONADOS').pack(pady=0)       ########FAÇA AQUI UM SISTEMA DE ROLAGEM PARA COLOCAR OS PRODUTOS, 
-                                                                                           ###TKINTER NAO TEM UMA LABEL NATIVA, MAIS E POSSIVEL FAZER USANDO WIDGET################
-        #Adicionar venda/compra
-        tk.Label(self, text='Adicionar Venda/Compra').pack(pady=5,side='left')
-        self.entry_nproduto = tk.Entry(self, width=20, )
-        self.entry_nproduto.pack(pady=10,side='left')
+        escrolar.grid(row=0,column=1,sticky='ns')
+        self.tabelap.bind("<<TreeviewSelect>>", self.itemSelecionado) #Treeview e a funcao pornta que faz o evento acontecer ao clicar na tabela
 
-        tk.Button(self,text='Confirmar',fg='green',command=self.getmoney).pack(pady=2,side='left')
+
+        add_box = ttk.LabelFrame(main_labelframe,text='Adicionar Gasto/Ganho',padding=10)
+        add_box.grid(row=0, column=0, pady=2, sticky='n')
+
+        editar_box = ttk.LabelFrame(main_labelframe,text='Editar Produto',padding=10)
+        editar_box.grid(row=0, column=1, pady=2, sticky='n')
+
+        delete_box = ttk.LabelFrame(main_labelframe,text='Excluir',padding=10)
+        delete_box.grid(row=0,column=2,pady=2, sticky='en')
+
+
+
+
+        ttk.Label(editar_box, text='Nome:').grid(row=1, column=0, pady=2, sticky='w')
+        self.entry_enome = ttk.Entry(editar_box)
+        self.entry_enome.grid(row=1, column=1, pady=2, sticky='ew')  
+        ttk.Label(editar_box, text='Campo:').grid(row=2, column=0, pady=2, sticky='w')
+        self.entry_campo =ttk.Entry(editar_box, width=20)
+        self.entry_campo.grid(row=2, column=1, pady=2, sticky='ew')
+        ttk.Label(editar_box, text='Edição:').grid(row=3, column=0, pady=2, sticky='w')
+        self.entry_editor = ttk.Entry(editar_box, width=20)
+        self.entry_editor.grid(row=3, column=1, pady=2, sticky='ew')
+
+        #Confirmar
+        ttk.Button(editar_box, text='Confirmar', command=self.editar, style='Green.TButton').grid(row=4, column=1, pady=5, sticky='w')
+        #Confirmar
+
+        ttk.Label(delete_box, text='Nome:').grid(row=0, column=0, pady=0, sticky='ew')
+        self.entry_exnome = ttk.Entry(delete_box)
+        self.entry_exnome.grid(row=0, column=1, pady=0, sticky='ew')
+
+        ttk.Button( delete_box, text='Confirmar', command=self.delete, style='Red.TButton').grid(row=2, column=1, pady=5, sticky='w')
+
+        ttk.Label(self, text='AQUI VAI A LISTA DE PRODUTOS JA ADICIONADOS').grid(row=9, column=0, columnspan=3, pady=10)
+
+        self.tabelap.heading('Nome',text='Nome do Produto')
+        self.tabelap.heading('Custo',text='Custo/Preço')                         #.heading() mexe no título da coluna.
+        self.tabelap.heading('Data',text=' Data')                                 #.column() mexe na área de dados abaixo do título.
+        self.tabelap.heading('Descrição',text=' Descrição')
+        self.tabelap.heading('Pedido',text=' Pedido')
+
+        self.tabelap.column('Nome',width=100)
+        self.tabelap.column('Custo',width=100)
+        self.tabelap.column('Data',width=100,anchor='center')                #'w' (esquerda), 'e' (ireita) e 'center'
+        self.tabelap.column('Descrição',width=100)
+        self.tabelap.column('Pedido',width=100)
+
+        self.informacoesTabela()
+
+        self.tabelap.grid(row=0,column=0,sticky='nsew',) #nsew vai fazer ela ocupar todo espaco disponivel no grid mas nao ta funcinando esta bucet
+  
+        ttk.Label(add_box, text='Nome:').grid(column=0)
+        self.entry_nproduto = ttk.Entry(add_box, width=8)
+        self.entry_nproduto.grid(row=0,column=1)
+
+        ttk.Button(add_box, text='Confirmar', style='Green.TButton', command=self.getmoney).grid(row=2,column=1,pady=5)
+
+
+
+    def itemSelecionado(self, event): #event e necessario para a funcao de evento funcionar
+        itemsele = self.tabelap.focus() #focus faz dar return no id da linha
+        dadositem = self.tabelap.item(itemsele) #cira um dicionario com as info
+        valores = dadositem.get('values') #vai pegar os info q esta nos valores
+        nome = valores[0]
+        self.entry_enome.delete(0,tk.END)
+        self.entry_enome.insert(0,nome)
+
+    def informacoesTabela(self):
+        for item in self.tabelap.get_children(): #getchildren mostra quais dados sao viseis na tebela
+            self.tabelap.delete(item)
+        dados = list(colecao.find({}))
+        for i in dados:
+            nome = i['nome']
+            custo = i['custo']
+            data = i['data']
+            descr = i['descrição']
+            peidod = i['pedido']
+            self.tabelap.insert('',index='end',values = (nome,custo,data,descr,peidod,))
+
 
     def getmoney(self):
         nomeadd = self.entry_nproduto.get()
         produto = colecao.find_one({'nome': nomeadd})
-        gasto = produto['custo']  
+        gasto = produto['custo']
         insert = {
-            '$':gasto
+            '$': gasto
         }
-        self.entry_nproduto.delete(0, tk.END)
         money.insert_one(insert)
+        self.entry_nproduto.delete(0, tk.END)
 
     def delete(self):
         nome = self.entry_exnome.get()
-        colecao.delete_one({'nome':nome})
-        self.limparForms
+        colecao.delete_one({'nome': nome})
+        self.informacoesTabela()
+        self.limparForms()
     
-
     def editar(self):
         nome = self.entry_enome.get()
         campo = self.entry_campo.get()
-        editor = self.entry_editor.get()                                             #####Editar######
+        editor = self.entry_editor.get()
         if campo.lower() == 'custo':
             editor = float(editor)
-        colecao.update_one({'nome':nome},{"$set":{campo:editor}})
-        self.limparForms
+        colecao.update_one({'nome': nome}, {"$set": {campo: editor}})
+        self.informacoesTabela()
+        self.limparForms()
     
     def limparForms(self):
-
-        self.entry_campo.delete(0,tk.END)
-        self.entry_enome.delete(0,tk.END)
-        self.entry_editor.delete(0,tk.END)
+        self.entry_campo.delete(0, tk.END)
+        self.entry_enome.delete(0, tk.END)
+        self.entry_editor.delete(0, tk.END)
+        self.entry_exnome.delete(0, tk.END)
         self.entry_enome.focus_set()
 
-
-
-
-
-# =================================================================
-# 2. APLICATIVO PRINCIPAL (Gerencia o Layout e a Troca)
-# =================================================================
-
-class App(tk.Tk):
+class App(ThemedTk):
     def __init__(self):
-        super().__init__()
+        super().__init__(theme='arc')
         self.title("Sistema CaixaCerto")
         self.geometry("800x500")
-        
-        # Configuração do Grid principal (Menu e Conteúdo)
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=1) # Coluna de conteúdo se expande
 
-        # ----------------------------------------------------
-        # MENU LATERAL (Sidebar Frame)
-        # ----------------------------------------------------
-        sidebar = tk.Frame(self, bg='lightgray', width=150)
+        style = ttk.Style(self,)
+        style.configure('Green.TLabel', foreground='green')
+        style.configure('Red.TLabel', foreground='red')              #Cola: background: Cor de fundo do widget.foreground: Cor do texto (ou dos elementos principais).font: A fonte do texto. Ex: ('Segoe UI', 10, 'bold').borderwidth: A espessura da borda em pixels.                                              
+        style.configure('Blue.TLabel', foreground='blue')
+        style.configure('Green.TButton', foreground='green')         # relief: O efeito 3D da borda (flat, raised, sunken, solid, ridge, groove).padding: Um espaço interno (respiro) dentro do widget.labelmargins: Específico do LabelFrame, define o espaço ao redor do texto no título da borda.
+        style.configure('Red.TButton', foreground='red')
+        
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+
+        sidebar = ttk.Frame(self, width=150)
         sidebar.grid(row=0, column=0, sticky="nsew")
         sidebar.grid_rowconfigure(5, weight=1)
         
-        tk.Label(sidebar, text="CaixaCerto", font=('Arial', 14, 'bold'), bg='lightgray').grid(row=0, column=0, padx=10, pady=20)
+        ttk.Label(sidebar, text="Caixa Certo", font=('Arial', 14, 'bold'),).grid(row=0, column=0, padx=10, pady=20)
 
-        # ----------------------------------------------------
-        # CONTAINER (Onde as Telas Serão Empilhadas)
-        # ----------------------------------------------------
-        container = tk.Frame(self)
-        container.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+        container = ttk.Frame(self)
+        container.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
         self.buttons = {}
         
-        # Instancia todas as telas e as empilha no container
-        for F in (HomeFrame, CadastroFrame, RelatorioFrame, ProdutosFrame): 
+        for F in (HomeFrame, CadastroFrame, RelatorioFrame, ProdutosFrame):
             frame_name = F.__name__.replace('Frame', '').lower()
             frame = F(master=container)
             self.frames[frame_name] = frame
-            frame.grid(row=0, column=0, sticky="nsew") # Empilhamento
+            frame.grid(row=0, column=0, sticky="nsew")
 
-        # ----------------------------------------------------
-        # BOTÕES DE NAVEGAÇÃO
-        # ----------------------------------------------------
-        
         self.buttons['home'] = ttk.Button(sidebar, text="Início", command=lambda: self.show_frame("home"))
         self.buttons['home'].grid(row=1, column=0, padx=10, pady=10, sticky="ew")
 
@@ -284,21 +334,17 @@ class App(tk.Tk):
         self.buttons['produtos'] = ttk.Button(sidebar, text="Produtos", command=lambda: self.show_frame("produtos"))
         self.buttons['produtos'].grid(row=4, column=0, padx=10, pady=10, sticky="ew")
         
-        self.show_frame("home") # Define a tela inicial
+        self.show_frame("home")
 
     def show_frame(self, page_name):
-        """Traz o Frame (Tela) desejado para o topo e atualiza o estado do menu."""
-        
         frame = self.frames[page_name]
         frame.tkraise()
         
-        # Atualiza o estado dos botões (desativa o botão da tela atual)
         for name, button in self.buttons.items():
             if name == page_name:
                 button.state(['disabled'])
             else:
                 button.state(['!disabled'])
-
 
 if __name__ == "__main__":
     app = App()
