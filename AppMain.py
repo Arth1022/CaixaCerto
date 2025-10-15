@@ -10,19 +10,23 @@ db = con.get_database("pizzaria")
 colecao = db.get_collection("produtos")
 money = db.get_collection("gastos/lucros")
 
-
 class HomeFrame(ttk.Frame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master, relatorio_frame, produtos_frame, **kwargs):
         super().__init__(master, **kwargs)
+
+        # ARMAZENAR AS REFERÊNCIAS
+        self.relatorio_frame = relatorio_frame
+        self.produtos_frame = produtos_frame
         
+        #Variaveis de string para atualizar automaticamente
         self.gasto_var = tk.StringVar()
         self.lucro_var = tk.StringVar()
         self.total_var = tk.StringVar()
 
         text_frame = ttk.Frame(self)
         text_frame.grid(row=0, column=0, sticky="we", padx=20, pady=20)
-        relatorio_frame = ttk.Frame(self)
-        relatorio_frame.grid(row=2,column=0,sticky='w')
+        relatorio_frame2 = ttk.Frame(self)
+        relatorio_frame2.grid(row=2,column=0,sticky='w')
         add_box = ttk.LabelFrame(self,text='Adicionar Venda/Compra',padding=10)
         add_box.grid(row=1, column=0, pady=2, sticky='w')
         self.calcula()
@@ -35,36 +39,48 @@ class HomeFrame(ttk.Frame):
         ttk.Label(add_box, text='Nome do Produto:').grid(column=0)
         self.entry_nproduto = ttk.Entry(add_box, width=14)
         self.entry_nproduto.grid(row=0,column=1)
+        ttk.Label(add_box,text="Quatidade:")
+        self.entry_qtd = ttk.Entry(add_box,width=5)
+        self.entry_qtd.grid(row=1, column=0)
 
         ttk.Button(add_box, text='Confirmar', style='Green.TButton', command=self.getmoney).grid(row=2,column=1,pady=5)
 
         ttk.Label(text_frame, text="Resumo Semanal:", font=('Arial', 14, 'bold')).grid(row=1,column=0)
         
-        custo_frame = ttk.LabelFrame(relatorio_frame,text='')
+        custo_frame = ttk.LabelFrame(relatorio_frame2,text='')
         custo_frame.grid(row=0,column=0)
         ttk.Label(custo_frame,text='Gastos:',font=('Arial',12,'bold')).grid(row=0,column=0,pady=2)
         ttk.Label(custo_frame,textvariable=self.gasto_var,font=('Arial',12,'bold')).grid(row=0,column=1,pady=2)
         
-        lucros_frame = ttk.LabelFrame(relatorio_frame,text='')
+        lucros_frame = ttk.LabelFrame(relatorio_frame2,text='')
         lucros_frame.grid(row=1,column=0)
         ttk.Label(lucros_frame,text='Vendas:',font=('Arial',12,'bold')).grid(row=0,column=0,pady=2)
         ttk.Label(lucros_frame,textvariable=self.lucro_var,font=('Arial',12,'bold')).grid(row=0,column=1,pady=2)
 
-        total_frame = ttk.LabelFrame(relatorio_frame,text='')
+        total_frame = ttk.LabelFrame(relatorio_frame2,text='')
         total_frame.grid(row=2 ,column=0)
         ttk.Label(total_frame,text='Total:',font=('Arial',12,'bold',),foreground='Blue').grid(row=0,column=0,pady=2)
         ttk.Label(total_frame,textvariable=self.total_var,font=('Arial',12,'bold',),foreground='Blue').grid(row=0,column=2,pady=2)
     
     def getmoney(self):
         nomeadd = self.entry_nproduto.get()
+        qtd = self.entry_qtd.get()
+        qtd = int(qtd)
         produto = colecao.find_one({'nome': nomeadd})
         gasto = produto['custo']
+        nome = produto['nome']
+        data = produto['data']
         insert = {
-            '$': gasto
+            'nome' : nome,
+            '$': gasto * qtd,
+            'data': data,
+            'quantidade' : qtd
         }
         money.insert_one(insert)
         self.calcula()
         self.entry_nproduto.delete(0, tk.END)
+        self.entry_qtd.delete(0,tk.END)
+        self.relatorio_frame.atualiza()
 
     def calcula(self):
         lista_gastos = list(money.find())
@@ -87,15 +103,17 @@ class HomeFrame(ttk.Frame):
         self.total_var.set(f'R$ {self.int_total}')
 
 class CadastroFrame(ttk.Frame):
-    def __init__(self, master, **kwargs):
-
+    def __init__(self, master, relatorio_frame, produtos_frame, **kwargs):
         super().__init__(master, **kwargs)
+
+        self.relatorio = relatorio_frame
+        self.produtos = produtos_frame
         
         self.entrada_var = tk.BooleanVar()
-        self.saida_var = tk.BooleanVar()   #Variantes dos checkbox
+        self.saida_var = tk.BooleanVar() 
         self.data_auto_var = tk.BooleanVar(value=True)
         
-        self.grid_columnconfigure(1, weight=1) #Tamanho da coluna om primeiro argumento e a coluna
+        self.grid_columnconfigure(1, weight=1) 
         nome_box = ttk.LabelFrame(self,text='Nome')
         nome_box.grid(row=5, column=1, pady=5, sticky='ew')
 
@@ -110,7 +128,7 @@ class CadastroFrame(ttk.Frame):
         desc_box.grid(row=8, column=1, pady=5, sticky='ew')
 
 
-        ttk.Label(self, text="                            Cadastro de Produto", font=('Arial', 18, 'bold')).grid(
+        ttk.Label(self, text="                 Cadastro de Produto", font=('Arial', 18, 'bold')).grid(
             row=0, column=0, columnspan=2, pady=10, sticky='w')
         
         
@@ -158,7 +176,7 @@ class CadastroFrame(ttk.Frame):
             data = date.today()
             data = str(data)
         else:
-            data = "Joao ainda nao fez o entry da data"
+            data = "Joao ainda nao fez o entry da data"                    #########FAZ A DATA JOAO###########
 
         recebernome = self.entry_nome.get()
         prod = {
@@ -170,6 +188,8 @@ class CadastroFrame(ttk.Frame):
         }
         colecao.insert_one(prod)
         self.limparForms()
+        self.relatorio.atualiza()
+        self.produtos.informacoesTabela()
             
     def limparForms(self):
         self.entry_nome.delete(0, tk.END)
@@ -185,7 +205,7 @@ class RelatorioFrame(ttk.Frame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         
-        ttk.Label(self, text="                              Relatório Gerencial", font=('Arial', 18, 'bold')).grid(row=0,column=0,sticky='we',columnspan='3')
+        ttk.Label(self, text="                       Relatório Gerencial", font=('Arial', 18, 'bold')).grid(row=0,column=0,sticky='we',columnspan='3')
 
         self.columnconfigure(0,weight=1)
 
@@ -205,7 +225,7 @@ class RelatorioFrame(ttk.Frame):
         container_tabela.rowconfigure(0,weight=1)
         container_tabela.columnconfigure(0,weight=1)
 
-        colunas = ('nome','custo', 'data')
+        colunas = ('nome','custo', 'data','quantidade')
         self.tabela_relatorio = ttk.Treeview(container_tabela,columns=colunas,show='headings' )
         self.tabela_relatorio.grid(row=0,column=0)
         escrolar = ttk.Scrollbar(container_tabela,orient='vertical')
@@ -217,10 +237,12 @@ class RelatorioFrame(ttk.Frame):
         self.tabela_relatorio.heading('nome',text='NOME')
         self.tabela_relatorio.heading('custo',text='CUSTO')
         self.tabela_relatorio.heading('data',text='DATA')
+        self.tabela_relatorio.heading('quantidade',text='Quantidade')
 
-        self.tabela_relatorio.column('nome',width=200)
-        self.tabela_relatorio.column('custo',width=200,anchor='center')
-        self.tabela_relatorio.column('data',width=200,anchor='center')
+        self.tabela_relatorio.column('nome',width=150)
+        self.tabela_relatorio.column('custo',width=100,anchor='center')
+        self.tabela_relatorio.column('data',width=100,anchor='center')
+        self.tabela_relatorio.column('quantidade',width=200,anchor='center')
 
         self.informacoesTabela()
         self.calcula()
@@ -236,11 +258,7 @@ class RelatorioFrame(ttk.Frame):
         total_frame = ttk.LabelFrame(container_dados,text='TOTAL')
         total_frame.grid(row=0,column=2)
         ttk.Label(total_frame,textvariable=self.total_var,font=('Arial',12,'bold',),foreground='Blue').grid(row=0,column=2,pady=10)
-        ttk.Button(container_dados,text='Atualizar',command=self.atualiza).grid(row=1,column=2)
         
-        
-
-
     def atualiza(self):
         self.calcula()
         self.informacoesTabela()
@@ -261,24 +279,29 @@ class RelatorioFrame(ttk.Frame):
         self.int_total = total
         self.gasto_var.set(f'R$ {self.int_gasto}')
         self.lucro_var.set(f'R$ {self.int_lucro}')
-        self.total_var.set(f'R$ {self.int_total}')    
+        self.total_var.set(f'R$ {self.int_total}')
 
     def informacoesTabela(self):
-        dados = list(colecao.find({}))
+        for i in self.tabela_relatorio.get_children():
+            self.tabela_relatorio.delete(i)
+        dados = list(money.find({}))
         for i in dados:
-            nome = i.get('nome', '')
-            custo = i.get('custo', '')
-            data = i.get('data', '')
-            self.tabela_relatorio.insert('', 'end', values=(nome, custo, data))
-        
+            nome = i['nome']
+            custo = i['$']
+            data = i['data']
+            qtd = i['quantidade']
+            self.tabela_relatorio.insert('', 'end', values=(nome, custo, data,qtd))
+
         
 
         
 class ProdutosFrame(ttk.Frame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master, relatorio_frame, **kwargs):
         super().__init__(master, **kwargs)
         
-        self.grid_columnconfigure(1, weight=1) # Configura o tamanho das colunas do grid
+        self.relatorio_frame = relatorio_frame
+        
+        self.grid_columnconfigure(1, weight=1) 
 
         main_labelframe = ttk.Frame(self)
         main_labelframe.grid(column=0,row=0,pady=3,columnspan=3)
@@ -289,15 +312,15 @@ class ProdutosFrame(ttk.Frame):
         tabela_frame.grid_columnconfigure(0, weight=1)
 
         colunas = ('Nome','Custo','Data','Descrição','Pedido')
-        self.tabelap = ttk.Treeview(tabela_frame,columns=colunas,show='headings') #tabela
+        self.tabelap = ttk.Treeview(tabela_frame,columns=colunas,show='headings') 
         escrolar = ttk.Scrollbar(tabela_frame,orient='vertical')
 
         #Config
         self.tabelap.config(yscrollcommand=escrolar.set)
-        escrolar.config(command=self.tabelap.yview)           #conexao tabela e barra de scroll
+        escrolar.config(command=self.tabelap.yview)
 
         escrolar.grid(row=0,column=1,sticky='ns')
-        self.tabelap.bind("<<TreeviewSelect>>", self.itemSelecionado) #Treeview e a funcao pornta que faz o evento acontecer ao clicar na tabela
+        self.tabelap.bind("<<TreeviewSelect>>", self.itemSelecionado) 
 
 
 
@@ -312,7 +335,7 @@ class ProdutosFrame(ttk.Frame):
 
         ttk.Label(editar_box, text='Nome:').grid(row=1, column=0, pady=2, sticky='w')
         self.entry_enome = ttk.Entry(editar_box)
-        self.entry_enome.grid(row=1, column=1, pady=2, sticky='ew')  
+        self.entry_enome.grid(row=1, column=1, pady=2, sticky='ew')
         ttk.Label(editar_box, text='Campo:').grid(row=2, column=0, pady=2, sticky='w')
         self.entry_campo =ttk.Entry(editar_box, width=20)
         self.entry_campo.grid(row=2, column=1, pady=2, sticky='ew')
@@ -330,35 +353,33 @@ class ProdutosFrame(ttk.Frame):
 
         ttk.Button( delete_box, text='Confirmar', command=self.delete, style='Red.TButton').grid(row=2, column=1, pady=5, sticky='w')
 
-        ttk.Button(self, text='Atualizar Tabela',command=self.informacoesTabela).grid(row=9, column=0, columnspan=3, pady=10)
-
         self.tabelap.heading('Nome',text='Nome do Produto')
-        self.tabelap.heading('Custo',text='Custo/Preço')                         #.heading() mexe no título da coluna.
-        self.tabelap.heading('Data',text=' Data')                                 #.column() mexe na área de dados abaixo do título.
+        self.tabelap.heading('Custo',text='Custo/Preço') 
+        self.tabelap.heading('Data',text=' Data') 
         self.tabelap.heading('Descrição',text=' Descrição')
         self.tabelap.heading('Pedido',text=' Pedido')
 
         self.tabelap.column('Nome',width=100)
         self.tabelap.column('Custo',width=100)
-        self.tabelap.column('Data',width=100,anchor='center')                #'w' (esquerda), 'e' (ireita) e 'center'
+        self.tabelap.column('Data',width=100,anchor='center') 
         self.tabelap.column('Descrição',width=100)
         self.tabelap.column('Pedido',width=100)
 
         self.informacoesTabela()
 
-        self.tabelap.grid(row=0,column=0,sticky='nsew',) #nsew vai fazer ela ocupar todo espaco disponivel no grid mas nao ta funcinando esta bucet
-  
+        self.tabelap.grid(row=0,column=0,sticky='nsew',)
 
-    def itemSelecionado(self, event): #event e necessario para a funcao de evento funcionar
-        itemsele = self.tabelap.focus() #focus faz dar return no id da linha
-        dadositem = self.tabelap.item(itemsele) #cira um dicionario com as info
-        valores = dadositem.get('values') #vai pegar os info q esta nos valores
+
+    def itemSelecionado(self, event): 
+        itemsele = self.tabelap.focus() 
+        dadositem = self.tabelap.item(itemsele) 
+        valores = dadositem.get('values') 
         nome = valores[0]
         self.entry_enome.delete(0,tk.END)
         self.entry_enome.insert(0,nome)
 
     def informacoesTabela(self):
-        for item in self.tabelap.get_children(): #getchildren mostra quais dados sao viseis na tebela
+        for item in self.tabelap.get_children(): 
             self.tabelap.delete(item)
         dados = list(colecao.find({}))
         for i in dados:
@@ -375,6 +396,7 @@ class ProdutosFrame(ttk.Frame):
         colecao.delete_one({'nome': nome})
         self.informacoesTabela()
         self.limparForms()
+        self.relatorio_frame.atualiza()
     
     def editar(self):
         nome = self.entry_enome.get()
@@ -385,6 +407,7 @@ class ProdutosFrame(ttk.Frame):
         colecao.update_one({'nome': nome}, {"$set": {campo: editor}})
         self.informacoesTabela()
         self.limparForms()
+        self.relatorio_frame.atualiza()
     
     def limparForms(self):
         self.entry_campo.delete(0, tk.END)
@@ -401,9 +424,9 @@ class App(ThemedTk):
 
         style = ttk.Style(self,)
         style.configure('Green.TLabel', foreground='green')
-        style.configure('Red.TLabel', foreground='red')              #Cola: background: Cor de fundo do widget.foreground: Cor do texto (ou dos elementos principais).font: A fonte do texto. Ex: ('Segoe UI', 10, 'bold').borderwidth: A espessura da borda em pixels.                                              
+        style.configure('Red.TLabel', foreground='red') 
         style.configure('Blue.TLabel', foreground='blue')
-        style.configure('Green.TButton', foreground='green')         # relief: O efeito 3D da borda (flat, raised, sunken, solid, ridge, groove).padding: Um espaço interno (respiro) dentro do widget.labelmargins: Específico do LabelFrame, define o espaço ao redor do texto no título da borda.
+        style.configure('Green.TButton', foreground='green') 
         style.configure('Red.TButton', foreground='red')
         
         self.grid_rowconfigure(0, weight=1)
@@ -423,12 +446,30 @@ class App(ThemedTk):
         self.frames = {}
         self.buttons = {}
         
-        for F in (HomeFrame, CadastroFrame, RelatorioFrame, ProdutosFrame):
-            frame_name = F.__name__.replace('Frame', '').lower()
-            frame = F(master=container)
-            self.frames[frame_name] = frame
+        relatorio_frame = RelatorioFrame(container)
+        produtos_frame = ProdutosFrame(container,relatorio_frame=relatorio_frame)
+        
+        home_frame = HomeFrame(
+            container, 
+            relatorio_frame=relatorio_frame, 
+            produtos_frame=produtos_frame
+        )
+        
+        cadastro_frame = CadastroFrame(
+            container, 
+            relatorio_frame=relatorio_frame, 
+            produtos_frame=produtos_frame
+        )
+        
+        self.frames['home'] = home_frame
+        self.frames['cadastro'] = cadastro_frame
+        self.frames['relatorio'] = relatorio_frame
+        self.frames['produtos'] = produtos_frame
+        
+        # 4. Posiciona todas as telas no grid (uma em cima da outra)
+        for frame in self.frames.values():
             frame.grid(row=0, column=0, sticky="nsew")
-
+        
         self.buttons['home'] = ttk.Button(sidebar, text="Início", command=lambda: self.show_frame("home"))
         self.buttons['home'].grid(row=1, column=0, padx=10, pady=10, sticky="ew")
 
