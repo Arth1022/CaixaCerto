@@ -291,9 +291,6 @@ class RelatorioFrame(ttk.Frame):
         total_custo = df_dados['custo'].sum()
         linha_total = pd.DataFrame([{'nome': 'Total', 'custo': total_custo}])
 
-        
-
-
 
 
     def atualiza(self):
