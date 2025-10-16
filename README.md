@@ -49,15 +49,10 @@ Pandas e XlsxWriter (Exportação para Excel)
 Clone o repositório:
 
 git clone https://github.com/Arth1022/CaixaCerto.git
+
 cd CaixaCerto
 
-
-Crie um ambiente virtual (opcional, mas recomendado):
-
-python -m venv venv
-source venv/bin/activate   # Linux/Mac
-venv\Scripts\activate      # Windows
-
+Instale as Bibliotecas
 pip install pymongo pandas xlsxwriter ttkthemes
 
 ▶️ Uso
@@ -71,7 +66,7 @@ A janela principal do sistema será aberta com as opções: Início, Cadastro, R
 
 📂 Estrutura do Projeto
 
-AppMain.py(Aplicativo Principal), README.md,  logoexcel.png 
+AppMain.py (Aplicativo Principal), README.md,  logoexcel.png 
 
 📊 Relatório Excel
 
