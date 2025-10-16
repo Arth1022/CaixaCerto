@@ -39,9 +39,9 @@ class HomeFrame(ttk.Frame):
         ttk.Label(add_box, text='Nome do Produto:').grid(column=0)
         self.entry_nproduto = ttk.Entry(add_box, width=14)
         self.entry_nproduto.grid(row=0,column=1)
-        ttk.Label(add_box,text="Quatidade:")
-        self.entry_qtd = ttk.Entry(add_box,width=5)
-        self.entry_qtd.grid(row=1, column=0)
+        ttk.Label(add_box,text="Quatidade:").grid(row=1,column=0,pady=2)
+        self.entry_qtd = ttk.Entry(add_box,width=14)
+        self.entry_qtd.grid(row=1, column=1)
 
         ttk.Button(add_box, text='Confirmar', style='Green.TButton', command=self.getmoney).grid(row=2,column=1,pady=5)
 
@@ -213,11 +213,16 @@ class RelatorioFrame(ttk.Frame):
         self.lucro_var = tk.StringVar()
         self.total_var = tk.StringVar()
 
+        selected_option = tk.StringVar()
+
         container_dados = ttk.Frame(self)
         container_dados.grid(row=2,column=0)
         container_dados.columnconfigure(0,weight=100)
         container_dados.columnconfigure(1,weight=100)
         container_dados.columnconfigure(2,weight=100)
+
+        container_excel = ttk.Frame(self)
+        container_excel.grid(row=3, column=0,sticky='w')
 
         container_tabela = ttk.Frame(self)
         container_tabela.grid(row=1,column=0)
@@ -258,7 +263,28 @@ class RelatorioFrame(ttk.Frame):
         total_frame = ttk.LabelFrame(container_dados,text='TOTAL')
         total_frame.grid(row=0,column=2)
         ttk.Label(total_frame,textvariable=self.total_var,font=('Arial',12,'bold',),foreground='Blue').grid(row=0,column=2,pady=10)
+
+        ttk.Label(container_excel,text='Gerar Relatório em EXCEL')(row=0,column=0)
+        ttk.Radiobutton(container_excel,text='Diário ',variable=selected_option,value='d').grid(row=1,column=0)
+        ttk.Radiobutton(container_excel,text='Mensal',variable=selected_option,value='m').grid(row=2,column=0)
+        ttk.Radiobutton(container_excel,text='Anual ',variable=selected_option,value='y').grid(row=3,column=0)
+        ttk.Button(container_excel,text='Gerar').grid(row=4,column=0)
         
+    def geradorPlanilha(self):
+        #date inteira#
+        data = date.today()
+        data_str = data.strftime("%d%m%Y")
+        datahj = int(data_str)   
+        #date inteira#
+        filtrados = colecao.find({'data': {'$lt': datahj}})
+        dados_planilha= []
+        dados_planilha.append(filtrados)
+
+            
+
+
+
+
     def atualiza(self):
         self.calcula()
         self.informacoesTabela()
