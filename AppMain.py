@@ -4,6 +4,7 @@ from ttkthemes import ThemedTk
 from pymongo import MongoClient
 from datetime import date
 from tkinter import messagebox
+import pandas as pd
 
 con = MongoClient('mongodb+srv://arth1022:H&soyam01@caixacerto.c4y3jgg.mongodb.net/')
 db = con.get_database("pizzaria")
@@ -172,8 +173,11 @@ class CadastroFrame(ttk.Frame):
         
         receberdata = self.data_auto_var.get()
 
+        data = date.today()
+        data_str = data.strftime("%d%m%Y")
+        data_int = int(data_str)
+
         if receberdata == True:
-            data = date.today()
             data = str(data)
         else:
             data = "Joao ainda nao fez o entry da data"                    #########FAZ A DATA JOAO###########
@@ -185,6 +189,7 @@ class CadastroFrame(ttk.Frame):
             'data': data,
             "descrição": receberdescri,
             "pedido": receberpedi,
+            'dint': data_int
         }
         colecao.insert_one(prod)
         self.limparForms()
@@ -264,23 +269,29 @@ class RelatorioFrame(ttk.Frame):
         total_frame.grid(row=0,column=2)
         ttk.Label(total_frame,textvariable=self.total_var,font=('Arial',12,'bold',),foreground='Blue').grid(row=0,column=2,pady=10)
 
-        ttk.Label(container_excel,text='Gerar Relatório em EXCEL')(row=0,column=0)
+        ttk.Label(container_excel,text='Gerar Relatório em EXCEL').grid(row=0,column=0)
         ttk.Radiobutton(container_excel,text='Diário ',variable=selected_option,value='d').grid(row=1,column=0)
         ttk.Radiobutton(container_excel,text='Mensal',variable=selected_option,value='m').grid(row=2,column=0)
         ttk.Radiobutton(container_excel,text='Anual ',variable=selected_option,value='y').grid(row=3,column=0)
         ttk.Button(container_excel,text='Gerar').grid(row=4,column=0)
         
     def geradorPlanilha(self):
-        #date inteira#
+        #Filtro#
         data = date.today()
         data_str = data.strftime("%d%m%Y")
         datahj = int(data_str)   
-        #date inteira#
-        filtrados = colecao.find({'data': {'$lt': datahj}})
-        dados_planilha= []
-        dados_planilha.append(filtrados)
+        filtrados = list(colecao.find({'dint': {'$lte': datahj}}))
+        ###
 
-            
+        df = pd.DataFrame(filtrados)
+        colunas = ['nome','custo','data','pedido','descrição']
+        colunas_finais = [col for col in colunas if col in df.columns]
+        df_dados = df[colunas_finais]
+        
+        total_custo = df_dados['custo'].sum()
+        linha_total = pd.DataFrame([{'nome': 'Total', 'custo': total_custo}])
+
+        
 
 
 
