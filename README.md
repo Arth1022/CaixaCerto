@@ -70,7 +70,8 @@ python AppMain.py
 A janela principal do sistema será aberta com as opções: Início, Cadastro, Relatório e Produtos.
 
 📂 Estrutura do Projeto
-.AppMain.py(Aplicativo Principal), README.md,  logoexcel.png 
+
+AppMain.py(Aplicativo Principal), README.md,  logoexcel.png 
 
 📊 Relatório Excel
 
