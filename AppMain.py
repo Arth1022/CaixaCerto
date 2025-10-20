@@ -224,8 +224,6 @@ class CadastroFrame(ttk.Frame):
 class RelatorioFrame(ttk.Frame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        
-        ttk.Label(self, text="                          Relatório Gerencial", font=('Arial', 18, 'bold')).grid(row=0,column=0,sticky='we',columnspan='3')
 
         self.columnconfigure(0,weight=1)
 
@@ -236,19 +234,34 @@ class RelatorioFrame(ttk.Frame):
         self.selected_option = tk.StringVar()
 
         container_dados = ttk.Frame(self)
-        container_dados.grid(row=2,column=0)
+        container_dados.grid(row=3,column=0)
         container_dados.columnconfigure(0,weight=100)
         container_dados.columnconfigure(1,weight=100)
         container_dados.columnconfigure(2,weight=100)
 
         container_excel = ttk.Frame(self)
-        container_excel.grid(row=3, column=0,sticky='w')
+        container_excel.grid(row=4, column=0,sticky='w')
 
         container_tabela = ttk.Frame(self)
-        container_tabela.grid(row=1,column=0)
+        container_tabela.grid(row=2,column=0)
 
         container_tabela.rowconfigure(0,weight=1)
         container_tabela.columnconfigure(0,weight=1)
+
+        container_filtro = ttk.Frame(self)
+        container_filtro.grid(row=1)
+
+        ttk.Label(self, text="                          Relatório Gerencial", font=('Arial', 18, 'bold')).grid(row=0,column=0,sticky='we',columnspan='3')
+
+        #Botões de filtrar#
+        self.button_diario = ttk.Button(container_filtro,text='Díario',command=self.filtro_diario)
+        self.button_diario.grid(row=0, column=0)
+        self.button_semanal = ttk.Button(container_filtro,text='Semanal',command=self.filtro_semanal)
+        self.button_semanal.grid(row=0, column=1)
+        self.button_mensal = ttk.Button(container_filtro,text='Mensal')
+        self.button_mensal.grid(row=0, column=2)
+        self.button_todas = ttk.Button(container_filtro,text='Todas')
+        self.button_todas.grid(row=0, column=3)
 
         colunas = ('nome','custo', 'data','quantidade')
         self.tabela_relatorio = ttk.Treeview(container_tabela,columns=colunas,show='headings' )
@@ -290,7 +303,73 @@ class RelatorioFrame(ttk.Frame):
         ttk.Radiobutton(container_excel,text='Mensal',variable=self.selected_option,value='mensal',cursor='hand2').grid(row=3,column=0,sticky='w')
         ttk.Radiobutton(container_excel,text='Anual',variable=self.selected_option,value='anual',cursor='hand2').grid(row=4,column=0,sticky='w')
         ttk.Button(container_excel,text='GERAR',command=self.geradorPlanilha,style='Blue.TButton',cursor='hand2').grid(row=5,column=0,sticky='w')
+
+    def filtro_diario(self):
+        data = date.today()
+        data_strhj = data.strftime("%d%m%Y")
+        data = int(data_strhj)
+        f = {'dint': {'$eq':data}}
+        filtro = list(money.find(f))
+        for i in self.tabela_relatorio.get_children():
+            self.tabela_relatorio.delete(i)
+        for i in filtro:
+            nome = i['nome']
+            custo = i['$']
+            data = i['data']
+            qtd = i['quantidade']
+            self.tabela_relatorio.insert('', 'end', values=(nome, custo, data,qtd))
+
+    def filtro_semanal(self):
+        data = date.today()
+        data_hoje_str = data.strftime("%d%m%Y")
+        data_hoje = int(data_hoje_str)
+
+        data_semanal = data - timedelta(days=7)
+        data_str_semanal = data_semanal.strftime("%d%m%Y")
+        data_semanal = int(data_str_semanal)
         
+        f = {'dint': {'$gte':data_semanal, '$lte':data_hoje}}
+        filtro = list(money.find(f))
+        for i in self.tabela_relatorio.get_children():
+            self.tabela_relatorio.delete(i)
+        for i in filtro:
+            nome = i['nome']
+            custo = i['$']
+            data = i['data']
+            qtd = i['quantidade']
+            self.tabela_relatorio.insert('', 'end', values=(nome, custo, data,qtd))
+
+    def filtro_mensal(self):
+        data = date.today()
+        data_strhj = data.strftime("%d%m%Y")
+        data = int(data_strhj)
+        f = {'dint': {'$eq':data}}
+        filtro = list(money.find(f))
+        for i in self.tabela_relatorio.get_children():
+            self.tabela_relatorio.delete(i)
+        for i in filtro:
+            nome = i['nome']
+            custo = i['$']
+            data = i['data']
+            qtd = i['quantidade']
+            self.tabela_relatorio.insert('', 'end', values=(nome, custo, data,qtd))
+
+    def filtro_todos(self):
+        data = date.today()
+        data_strhj = data.strftime("%d%m%Y")
+        data = int(data_strhj)
+        f = {'dint': {'$eq':data}}
+        filtro = list(money.find(f))
+        for i in self.tabela_relatorio.get_children():
+            self.tabela_relatorio.delete(i)
+        for i in filtro:
+            nome = i['nome']
+            custo = i['$']
+            data = i['data']
+            qtd = i['quantidade']
+            self.tabela_relatorio.insert('', 'end', values=(nome, custo, data,qtd))
+
+
     def geradorPlanilha(self):
         #Vai calcular o passado anual,mensal.etc...
         data_hoje = date.today()
