@@ -329,13 +329,8 @@ class RelatorioFrame(ttk.Frame):
             filtrados = []
         df = pd.DataFrame(filtrados)
 
-        #Usei IA para fazer a formatação do excel um pouco mais profissional e fiz alterações, mas aconselho saber pelo menos o basico para poder fazer modificações,adicinar e etc...Use a 
-        #documentação do PANDAS e xlsxwriter
-        # ======================================================================
         # 2. PREPARAÇÃO DOS DADOS PARA O NOVO TEMPLATE (A ponte entre os códigos)
-        # ======================================================================
-        # Supondo que seus dados em 'filtrados' tenham as colunas: 'data', 'nome', 'custo'
-        # Vamos renomeá-las para corresponder ao nosso template profissional.
+        
         mapeamento_colunas = {
             'data': 'Data',
             'nome': 'Nome',
@@ -352,9 +347,8 @@ class RelatorioFrame(ttk.Frame):
         # Calculando os totais com base nos dados reais do banco
         total_vendas = df_final['Valor da Venda'].sum() if 'Valor da Venda' in df_final.columns else 0
 
-        # ======================================================================
+
         # 3. CRIAÇÃO DA PLANILHA FORMATADA (Lógica do novo template)
-        # ======================================================================
         with pd.ExcelWriter(nome_arquivo, engine='xlsxwriter') as writer:
             
             workbook = writer.book
@@ -483,12 +477,8 @@ class ProdutosFrame(ttk.Frame):
         self.entry_enome = ttk.Entry(editar_box)
         self.entry_enome.grid(row=1, column=1, pady=2, sticky='ew')
         ttk.Label(editar_box, text='Campo:').grid(row=2, column=0, pady=2, sticky='w')
-        self.escolher_combo = ttk.Combobox(editar_box,textvariable=self.variavel_string_combo,values=['Nome','Custo/Gasto','Descrição','Pedido',])
+        self.escolher_combo = ttk.Combobox(editar_box,textvariable=self.variavel_string_combo,values=['Nome','Custo/Gasto','Descrição','Pedido',],state='readonly')
         self.escolher_combo.grid(row=2,column=1,pady=2)
-
-
-        #self.entry_campo =ttk.Entry(editar_box, width=20)
-        #self.entry_campo.grid(row=2, column=1, pady=2, sticky='ew')
 
         ttk.Label(editar_box, text='Edição:').grid(row=3, column=0, pady=2, sticky='w')
         self.entry_editor = ttk.Entry(editar_box, width=20)
