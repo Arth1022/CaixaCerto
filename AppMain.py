@@ -4,6 +4,7 @@ from ttkthemes import ThemedTk
 from pymongo import MongoClient
 from datetime import date, timedelta
 from tkinter import messagebox
+from tkcalendar import DateEntry
 import pandas as pd #pip install pandas xlsxwriter
 
 con = MongoClient('mongodb+srv://arth1022:H&soyam01@caixacerto.c4y3jgg.mongodb.net/')
@@ -15,7 +16,6 @@ class HomeFrame(ttk.Frame):
     def __init__(self, master, relatorio_frame, produtos_frame, **kwargs):
         super().__init__(master, **kwargs)
 
-        # ARMAZENAR AS REFERÊNCIAS
         self.relatorio_frame = relatorio_frame
         self.produtos_frame = produtos_frame
         
@@ -23,6 +23,8 @@ class HomeFrame(ttk.Frame):
         self.gasto_var = tk.StringVar()
         self.lucro_var = tk.StringVar()
         self.total_var = tk.StringVar()
+
+        self.data_auto_var_home = tk.BooleanVar(value=True)
 
         text_frame = ttk.Frame(self)
         text_frame.grid(row=0, column=0, sticky="we", padx=20, pady=20)
@@ -37,14 +39,28 @@ class HomeFrame(ttk.Frame):
 
         ttk.Label(text_frame, text="Seja Bem-vindo ao Sistema!", font=('Arial', 18, 'bold')).grid(row=0,column=0)
         
-        ttk.Label(add_box, text='Nome do Produto:').grid(column=0)
+        ttk.Label(add_box, text='Nome do Produto:').grid(row=0, column=0, sticky='w')
         self.entry_nproduto = ttk.Entry(add_box, width=14)
-        self.entry_nproduto.grid(row=0,column=1)
-        ttk.Label(add_box,text="Quatidade:").grid(row=1,column=0,pady=2)
+        self.entry_nproduto.grid(row=0,column=1, sticky='ew')
+        
+        ttk.Label(add_box,text="Quantidade:"). grid(row=1, column=0, sticky='w')
         self.entry_qtd = ttk.Entry(add_box,width=14)
-        self.entry_qtd.grid(row=1, column=1)
+        self.entry_qtd.grid(row=1, column=1, sticky='ew')
+        
+        ttk.Label(add_box, text='Data:').grid(row=2, column=0, sticky='w')
+        self.entry_data = DateEntry(add_box, 
+                                    width=12, 
+                                    date_pattern='dd/MM/yyyy', 
+                                    locale='pt_BR')
+        self.entry_data.grid(row=2, column=1, sticky='ew')
 
-        ttk.Button(add_box, text='Confirmar', style='Green.TButton', command=self.getmoney).grid(row=2,column=1,pady=5)
+        self.check_data_auto = ttk.Checkbutton(add_box, 
+                                               text='Data Automática', 
+                                               variable=self.data_auto_var_home,
+                                               command=self.toggle_date_entry)
+        self.check_data_auto.grid(row=3, column=0, columnspan=2, sticky='w', pady=5)
+
+        ttk.Button(add_box, text='Confirmar', style='Green.TButton', command=self.getmoney,cursor='hand2').grid(row=4, column=1, pady=5, sticky='e')
 
         ttk.Label(text_frame, text="Resumo Semanal:", font=('Arial', 14, 'bold')).grid(row=1,column=0)
         
@@ -62,22 +78,35 @@ class HomeFrame(ttk.Frame):
         total_frame.grid(row=2 ,column=0)
         ttk.Label(total_frame,text='Total:',font=('Arial',12,'bold',),foreground='Blue').grid(row=0,column=0,pady=2)
         ttk.Label(total_frame,textvariable=self.total_var,font=('Arial',12,'bold',),foreground='Blue').grid(row=0,column=2,pady=2)
-    
+
+
+    def toggle_date_entry(self):
+        if self.data_auto_var_home.get():
+            self.entry_data.config(state='disabled')
+        else:
+            self.entry_data.config(state='normal')
+
     def getmoney(self):
+        self.data_auto_var_home.get()
         nomeadd = self.entry_nproduto.get()
         qtd = self.entry_qtd.get()
         qtd = int(qtd)
         produto = colecao.find_one({'nome': nomeadd})
         gasto = produto['custo']
         nome = produto['nome']
-        data0 = produto['data']
-        data = date.today()
-        data_str = data.strftime("%d%m%Y")
+        if self.data_auto_var_home.get() == True:
+            data_obj = date.today()
+        else:
+            data_obj = self.entry_data.get_date()
+
+        data_str_for_table = data_obj.strftime("%d/%m/%Y")
+        data_str = data_obj.strftime("%d%m%Y")
         data_int = int(data_str)
+
         insert = {
             'nome' : nome,
             '$': gasto * qtd,
-            'data': data0,
+            'data': data_str_for_table,
             'quantidade' : qtd,
             'dint': data_int
         }
@@ -114,9 +143,7 @@ class CadastroFrame(ttk.Frame):
         self.relatorio = relatorio_frame
         self.produtos = produtos_frame
         
-        self.entrada_var = tk.BooleanVar()
-        self.saida_var = tk.BooleanVar() 
-        self.data_auto_var = tk.BooleanVar(value=True)
+        self.entrada_var = tk.StringVar()
         
         self.grid_columnconfigure(1, weight=1) 
         nome_box = ttk.LabelFrame(self,text='Nome')
@@ -138,10 +165,8 @@ class CadastroFrame(ttk.Frame):
         
         
         ttk.Label(self, text="Tipo de cadastro:",font=('Arial', 13, 'bold')).grid(row=1, column=0, columnspan=2, pady=(10,0), sticky='w')
-        ttk.Checkbutton(self, text='Entrada', variable=self.entrada_var).grid(row=2, column=0, columnspan=2, pady=5, sticky='w')
-        ttk.Checkbutton(self, text='Saida', variable=self.saida_var).grid(row=3, column=0, columnspan=2, pady=5, sticky='w')
-
-        ttk.Checkbutton(self, text='Data Automatica', variable=self.data_auto_var).grid(row=4, column=0, columnspan=2, pady=5, sticky='w')
+        ttk.Radiobutton(self, text='Venda', variable=self.entrada_var,value='venda',cursor='hand2').grid(row=2, column=0, columnspan=2, pady=5, sticky='w')
+        ttk.Radiobutton(self, text='Compra', variable=self.entrada_var,value='compra',cursor='hand2').grid(row=3, column=0, columnspan=2, pady=5, sticky='w')
 
         self.entry_nome = ttk.Entry(nome_box, width=20)
         self.entry_nome.grid(row=0, column=1, pady=5, sticky='ew')
@@ -155,48 +180,36 @@ class CadastroFrame(ttk.Frame):
         self.entry_pedido = ttk.Entry(pedido_box, width=20)
         self.entry_pedido.grid(row=0, column=1, pady=5, sticky='ew')
 
-        ttk.Button(self, text='Confirmar registro', command=self.enviarDados).grid(row=9, column=0, columnspan=2, pady=10,sticky='w')
+        ttk.Button(self, text='Confirmar registro', command=self.enviarDados,cursor='hand2').grid(row=9, column=0, columnspan=2, pady=10,sticky='w')
 
     def enviarDados(self):
         recebercusto = self.entry_custo.get()
         recebercusto = int(recebercusto)
 
         recebertipo = self.entrada_var.get()
-        recebertipo2 = self.saida_var.get()
-
         receberdescri = self.entry_descricao.get()
         receberpedi = self.entry_pedido.get()
 
-        if recebertipo == True and recebertipo2 == True or recebertipo == False and recebertipo2 == False:
+        if recebertipo == 'venda':
             custoreal = recebercusto
-            custoreal = 0
-        elif recebertipo2 == True:
+        elif recebertipo == 'compra':
             custoreal = recebercusto - (recebercusto * 2)
-        elif recebertipo == True:
-            custoreal = recebercusto
-        
-        receberdata = self.data_auto_var.get()
-
         data = date.today()
         data_str = data.strftime("%d%m%Y")
         data_int = int(data_str)
-
-        if receberdata == True:
-            data = str(data)
-        else:
-            data = "Joao ainda nao fez o entry da data"                    #########FAZ A DATA JOAO###########
-
         recebernome = self.entry_nome.get()
         prod = {
             'nome': recebernome,
             'custo': custoreal,
-            'data': data,
             "descrição": receberdescri,
             "pedido": receberpedi,
             'dint': data_int
         }
         colecao.insert_one(prod)
         self.limparForms()
+
+        messagebox.showinfo(title='Cadastrado',message='Cadastrado com sucesso!')
+
         self.relatorio.atualiza()
         self.produtos.informacoesTabela()
             
@@ -206,8 +219,6 @@ class CadastroFrame(ttk.Frame):
         self.entry_pedido.delete(0, tk.END)
         self.entry_custo.delete(0, tk.END)
         self.entrada_var.set(False)
-        self.saida_var.set(False)
-        self.data_auto_var.set(True)
         self.entry_nome.focus_set()
 
 class RelatorioFrame(ttk.Frame):
@@ -273,12 +284,12 @@ class RelatorioFrame(ttk.Frame):
         total_frame.grid(row=0,column=2)
         ttk.Label(total_frame,textvariable=self.total_var,font=('Arial',12,'bold',),foreground='Blue').grid(row=0,column=2,pady=10)
 
-        ttk.Label(container_excel,text='Gerar Relatório em EXCEL',font=('Arial', 15, 'bold')).grid(row=0,column=0)
-        ttk.Radiobutton(container_excel,text='Diário',variable=self.selected_option,value='diario').grid(row=1,column=0,sticky='w')
-        ttk.Radiobutton(container_excel,text='Semanal',variable=self.selected_option,value='semanal').grid(row=2,column=0,sticky='w')
-        ttk.Radiobutton(container_excel,text='Mensal',variable=self.selected_option,value='mensal').grid(row=3,column=0,sticky='w')
-        ttk.Radiobutton(container_excel,text='Anual',variable=self.selected_option,value='anual').grid(row=4,column=0,sticky='w')
-        ttk.Button(container_excel,text='GERAR',command=self.geradorPlanilha,style='Blue.TButton').grid(row=5,column=0,sticky='w')
+        ttk.Label(container_excel,text='Gerar Relatório',font=('Arial', 15, 'bold')).grid(row=0,column=0,pady=3)
+        ttk.Radiobutton(container_excel,text='Diário',variable=self.selected_option,value='diario',cursor='hand2').grid(row=1,column=0,sticky='w')
+        ttk.Radiobutton(container_excel,text='Semanal',variable=self.selected_option,value='semanal',cursor='hand2').grid(row=2,column=0,sticky='w')
+        ttk.Radiobutton(container_excel,text='Mensal',variable=self.selected_option,value='mensal',cursor='hand2').grid(row=3,column=0,sticky='w')
+        ttk.Radiobutton(container_excel,text='Anual',variable=self.selected_option,value='anual',cursor='hand2').grid(row=4,column=0,sticky='w')
+        ttk.Button(container_excel,text='GERAR',command=self.geradorPlanilha,style='Blue.TButton',cursor='hand2').grid(row=5,column=0,sticky='w')
         
     def geradorPlanilha(self):
         #Vai calcular o passado anual,mensal.etc...
@@ -431,6 +442,8 @@ class RelatorioFrame(ttk.Frame):
 class ProdutosFrame(ttk.Frame):
     def __init__(self, master, relatorio_frame, **kwargs):
         super().__init__(master, **kwargs)
+
+        self.variavel_string_combo = tk.StringVar()
         
         self.relatorio_frame = relatorio_frame
         
@@ -444,7 +457,7 @@ class ProdutosFrame(ttk.Frame):
         tabela_frame.grid_rowconfigure(0, weight=1)
         tabela_frame.grid_columnconfigure(0, weight=1)
 
-        colunas = ('Nome','Custo','Data','Descrição','Pedido')
+        colunas = ('Nome','Custo','Descrição','Pedido')
         self.tabelap = ttk.Treeview(tabela_frame,columns=colunas,show='headings') 
         escrolar = ttk.Scrollbar(tabela_frame,orient='vertical')
 
@@ -470,31 +483,34 @@ class ProdutosFrame(ttk.Frame):
         self.entry_enome = ttk.Entry(editar_box)
         self.entry_enome.grid(row=1, column=1, pady=2, sticky='ew')
         ttk.Label(editar_box, text='Campo:').grid(row=2, column=0, pady=2, sticky='w')
-        self.entry_campo =ttk.Entry(editar_box, width=20)
-        self.entry_campo.grid(row=2, column=1, pady=2, sticky='ew')
+        self.escolher_combo = ttk.Combobox(editar_box,textvariable=self.variavel_string_combo,values=['Nome','Custo/Gasto','Descrição','Pedido',])
+        self.escolher_combo.grid(row=2,column=1,pady=2)
+
+
+        #self.entry_campo =ttk.Entry(editar_box, width=20)
+        #self.entry_campo.grid(row=2, column=1, pady=2, sticky='ew')
+
         ttk.Label(editar_box, text='Edição:').grid(row=3, column=0, pady=2, sticky='w')
         self.entry_editor = ttk.Entry(editar_box, width=20)
         self.entry_editor.grid(row=3, column=1, pady=2, sticky='ew')
 
         #Confirmar
-        ttk.Button(editar_box, text='Confirmar', command=self.editar, style='Green.TButton').grid(row=4, column=1, pady=5, sticky='w')
+        ttk.Button(editar_box, text='Confirmar', command=self.editar, style='Green.TButton',cursor='hand2').grid(row=4, column=1, pady=5, sticky='w')
         #Confirmar
 
         ttk.Label(delete_box, text='Nome:').grid(row=0, column=0, pady=0, sticky='ew')
         self.entry_exnome = ttk.Entry(delete_box)
         self.entry_exnome.grid(row=0, column=1, pady=0, sticky='ew')
 
-        ttk.Button( delete_box, text='Confirmar', command=self.delete, style='Red.TButton').grid(row=2, column=1, pady=5, sticky='w')
+        ttk.Button( delete_box, text='Confirmar', command=self.delete, style='Red.TButton',cursor='hand2').grid(row=2, column=1, pady=5, sticky='w')
 
         self.tabelap.heading('Nome',text='Nome do Produto')
-        self.tabelap.heading('Custo',text='Custo/Preço') 
-        self.tabelap.heading('Data',text=' Data') 
+        self.tabelap.heading('Custo',text='Custo') 
         self.tabelap.heading('Descrição',text=' Descrição')
         self.tabelap.heading('Pedido',text=' Pedido')
 
         self.tabelap.column('Nome',width=100)
         self.tabelap.column('Custo',width=100)
-        self.tabelap.column('Data',width=100,anchor='center') 
         self.tabelap.column('Descrição',width=100)
         self.tabelap.column('Pedido',width=100)
 
@@ -510,6 +526,7 @@ class ProdutosFrame(ttk.Frame):
         nome = valores[0]
         self.entry_enome.delete(0,tk.END)
         self.entry_enome.insert(0,nome)
+        self.entry_exnome.insert(0,nome)
 
     def informacoesTabela(self):
         for item in self.tabelap.get_children(): 
@@ -518,32 +535,35 @@ class ProdutosFrame(ttk.Frame):
         for i in dados:
             nome = i['nome']
             custo = i['custo']
-            data = i['data']
             descr = i['descrição']
             peidod = i['pedido']
-            self.tabelap.insert('',index='end',values = (nome,custo,data,descr,peidod,))
+            self.tabelap.insert('',index='end',values = (nome,custo,descr,peidod))
 
 
     def delete(self):
         nome = self.entry_exnome.get()
-        colecao.delete_one({'nome': nome})
-        self.informacoesTabela()
-        self.limparForms()
-        self.relatorio_frame.atualiza()
+        messagebox_do_delete = messagebox.askokcancel(title='Confirmação', message='Deseja EXCLUIR o produto?')
+        if messagebox_do_delete == True:    
+            colecao.delete_one({'nome': nome})
+            self.informacoesTabela()
+            self.limparForms()
+
     
     def editar(self):
-        nome = self.entry_enome.get()
-        campo = self.entry_campo.get()
-        editor = self.entry_editor.get()
-        if campo.lower() == 'custo':
-            editor = float(editor)
-        colecao.update_one({'nome': nome}, {"$set": {campo: editor}})
-        self.informacoesTabela()
-        self.limparForms()
-        self.relatorio_frame.atualiza()
+        nome = self.entry_enome.get().lower()
+        campo = self.variavel_string_combo.get().lower()
+        if campo == "custo/gasto":
+            campo = 'custo'
+        editor = self.entry_editor.get().lower()
+        messagebox_do_edit = messagebox.askokcancel(title='Confirmação', message='Deseja EDITAR o produto?')
+        if messagebox_do_edit == True:
+            if campo == 'custo':
+                editor = float(editor)
+            colecao.update_one({'nome': nome}, {"$set": {campo: editor}})
+            self.informacoesTabela()
+            self.limparForms()
     
     def limparForms(self):
-        self.entry_campo.delete(0, tk.END)
         self.entry_enome.delete(0, tk.END)
         self.entry_editor.delete(0, tk.END)
         self.entry_exnome.delete(0, tk.END)
@@ -553,7 +573,7 @@ class App(ThemedTk):
     def __init__(self):
         super().__init__(theme='arc')
         self.title("Sistema CaixaCerto")
-        self.geometry("800x500")
+        self.geometry("800x600")
 
         style = ttk.Style(self,)
         style.configure('Green.TLabel', foreground='green')
@@ -599,22 +619,21 @@ class App(ThemedTk):
         self.frames['cadastro'] = cadastro_frame
         self.frames['relatorio'] = relatorio_frame
         self.frames['produtos'] = produtos_frame
-        
-        # 4. Posiciona todas as telas no grid (uma em cima da outra)
+    
         for frame in self.frames.values():
             frame.grid(row=0, column=0, sticky="nsew")
         
-        self.buttons['home'] = ttk.Button(sidebar, text="Início", command=lambda: self.show_frame("home"))
+        self.buttons['home'] = ttk.Button(sidebar, text="Início", command=lambda: self.show_frame("home"),cursor='hand2')
         self.buttons['home'].grid(row=1, column=0, padx=10, pady=10, sticky="ew")
 
-        self.buttons['cadastro'] = ttk.Button(sidebar, text="Cadastro", command=lambda: self.show_frame("cadastro"))
-        self.buttons['cadastro'].grid(row=2, column=0, padx=10, pady=10, sticky="ew")
+        self.buttons['relatorio'] = ttk.Button(sidebar, text="Relatório", command=lambda: self.show_frame("relatorio"),cursor='hand2')
+        self.buttons['relatorio'].grid(row=2, column=0, padx=10, pady=10, sticky="ew")
 
-        self.buttons['relatorio'] = ttk.Button(sidebar, text="Relatório", command=lambda: self.show_frame("relatorio"))
-        self.buttons['relatorio'].grid(row=3, column=0, padx=10, pady=10, sticky="ew")
+        self.buttons['produtos'] = ttk.Button(sidebar, text="Produtos", command=lambda: self.show_frame("produtos"),cursor='hand2')
+        self.buttons['produtos'].grid(row=3, column=0, padx=10, pady=10, sticky="ew")
         
-        self.buttons['produtos'] = ttk.Button(sidebar, text="Produtos", command=lambda: self.show_frame("produtos"))
-        self.buttons['produtos'].grid(row=4, column=0, padx=10, pady=10, sticky="ew")
+        self.buttons['cadastro'] = ttk.Button(sidebar, text="Cadastro", command=lambda: self.show_frame("cadastro"),cursor='hand2')
+        self.buttons['cadastro'].grid(row=4, column=0, padx=10, pady=10, sticky="ew")
         
         self.show_frame("home")
 
