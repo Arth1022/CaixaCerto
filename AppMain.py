@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from ttkthemes import ThemedTk
 from pymongo import MongoClient
-from datetime import date, timedelta
+from datetime import datetime, timedelta, date
 from tkinter import messagebox
 from tkcalendar import DateEntry
 import pandas as pd #pip install pandas xlsxwriter
@@ -19,7 +19,6 @@ class HomeFrame(ttk.Frame):
         self.relatorio_frame = relatorio_frame
         self.produtos_frame = produtos_frame
         
-        #Variaveis de string para atualizar automaticamente
         self.gasto_var = tk.StringVar()
         self.lucro_var = tk.StringVar()
         self.total_var = tk.StringVar()
@@ -55,10 +54,12 @@ class HomeFrame(ttk.Frame):
         self.entry_data.grid(row=2, column=1, sticky='ew')
 
         self.check_data_auto = ttk.Checkbutton(add_box, 
-                                               text='Data Automática', 
-                                               variable=self.data_auto_var_home,
-                                               command=self.toggle_date_entry)
+                                                text='Data Automática', 
+                                                variable=self.data_auto_var_home,
+                                                command=self.toggle_date_entry)
         self.check_data_auto.grid(row=3, column=0, columnspan=2, sticky='w', pady=5)
+        
+        self.toggle_date_entry()
 
         ttk.Button(add_box, text='Confirmar', style='Green.TButton', command=self.getmoney,cursor='hand2').grid(row=4, column=1, pady=5, sticky='e')
 
@@ -94,21 +95,23 @@ class HomeFrame(ttk.Frame):
         produto = colecao.find_one({'nome': nomeadd})
         gasto = produto['custo']
         nome = produto['nome']
+        
+        data_para_salvar = None
+        
         if self.data_auto_var_home.get() == True:
-            data_obj = date.today()
+            data_para_salvar = datetime.now()
         else:
-            data_obj = self.entry_data.get_date()
+            data_obj_date = self.entry_data.get_date()
+            data_para_salvar = datetime.combine(data_obj_date, datetime.min.time())
 
-        data_str_for_table = data_obj.strftime("%d/%m/%Y")
-        data_str = data_obj.strftime("%d%m%Y")
-        data_int = int(data_str)
+        data_str = data_para_salvar.strftime("%d/%m/%Y")
 
         insert = {
             'nome' : nome,
             '$': gasto * qtd,
-            'data': data_str_for_table,
+            'data': data_str,
+            'd_obj': data_para_salvar,
             'quantidade' : qtd,
-            'dint': data_int
         }
         money.insert_one(insert)
         self.calcula()
@@ -117,11 +120,14 @@ class HomeFrame(ttk.Frame):
         self.relatorio_frame.atualiza()
 
     def calcula(self):
-        lista_gastos = list(money.find())
+        data_hoje_inicio = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        data_amanha_inicio = data_hoje_inicio + timedelta(days=1)
+        f = {'d_obj': {'$gte': data_hoje_inicio, '$lt': data_amanha_inicio}}
+        filtro = list(money.find(f))
         total = 0
         lucro = 0
         gasto = 0
-        for i in lista_gastos:
+        for i in filtro:
             valor = i.get('$')
             total += valor
             if valor < 0:
@@ -160,7 +166,7 @@ class CadastroFrame(ttk.Frame):
         desc_box.grid(row=8, column=1, pady=5, sticky='ew')
 
 
-        ttk.Label(self, text="                 Cadastro de Produto", font=('Arial', 18, 'bold')).grid(
+        ttk.Label(self, text="       Cadastro de Produto", font=('Arial', 18, 'bold')).grid(
             row=0, column=0, columnspan=2, pady=10, sticky='w')
         
         
@@ -194,16 +200,12 @@ class CadastroFrame(ttk.Frame):
             custoreal = recebercusto
         elif recebertipo == 'compra':
             custoreal = recebercusto - (recebercusto * 2)
-        data = date.today()
-        data_str = data.strftime("%d%m%Y")
-        data_int = int(data_str)
         recebernome = self.entry_nome.get()
         prod = {
             'nome': recebernome,
             'custo': custoreal,
             "descrição": receberdescri,
             "pedido": receberpedi,
-            'dint': data_int
         }
         colecao.insert_one(prod)
         self.limparForms()
@@ -251,16 +253,15 @@ class RelatorioFrame(ttk.Frame):
         container_filtro = ttk.Frame(self)
         container_filtro.grid(row=1)
 
-        ttk.Label(self, text="                          Relatório Gerencial", font=('Arial', 18, 'bold')).grid(row=0,column=0,sticky='we',columnspan='3')
+        ttk.Label(self, text="       Relatório Gerencial", font=('Arial', 18, 'bold')).grid(row=0,column=0,sticky='we',columnspan='3')
 
-        #Botões de filtrar#
         self.button_diario = ttk.Button(container_filtro,text='Díario',command=self.filtro_diario)
         self.button_diario.grid(row=0, column=0)
         self.button_semanal = ttk.Button(container_filtro,text='Semanal',command=self.filtro_semanal)
         self.button_semanal.grid(row=0, column=1)
-        self.button_mensal = ttk.Button(container_filtro,text='Mensal')
+        self.button_mensal = ttk.Button(container_filtro,text='Mensal', command=self.filtro_mensal)
         self.button_mensal.grid(row=0, column=2)
-        self.button_todas = ttk.Button(container_filtro,text='Todas')
+        self.button_todas = ttk.Button(container_filtro,text='Todas', command=self.filtro_todos)
         self.button_todas.grid(row=0, column=3)
 
         colunas = ('nome','custo', 'data','quantidade')
@@ -305,61 +306,58 @@ class RelatorioFrame(ttk.Frame):
         ttk.Button(container_excel,text='GERAR',command=self.geradorPlanilha,style='Blue.TButton',cursor='hand2').grid(row=5,column=0,sticky='w')
 
     def filtro_diario(self):
-        data = date.today()
-        data_strhj = data.strftime("%d%m%Y")
-        data = int(data_strhj)
-        f = {'dint': {'$eq':data}}
+        data_hoje_inicio = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        data_amanha_inicio = data_hoje_inicio + timedelta(days=1)
+        
+        f = {'d_obj': {'$gte': data_hoje_inicio, '$lt': data_amanha_inicio}}
         filtro = list(money.find(f))
+
         for i in self.tabela_relatorio.get_children():
             self.tabela_relatorio.delete(i)
+
         for i in filtro:
             nome = i['nome']
             custo = i['$']
             data = i['data']
             qtd = i['quantidade']
-            self.tabela_relatorio.insert('', 'end', values=(nome, custo, data,qtd))
+            self.tabela_relatorio.insert('', 'end', values=(nome, custo, data, qtd))
 
     def filtro_semanal(self):
-        data = date.today()
-        data_hoje_str = data.strftime("%d%m%Y")
-        data_hoje = int(data_hoje_str)
-
-        data_semanal = data - timedelta(days=7)
-        data_str_semanal = data_semanal.strftime("%d%m%Y")
-        data_semanal = int(data_str_semanal)
+        data_fim = datetime.now()
+        data_inicio = (data_fim - timedelta(days=7)).replace(hour=0, minute=0, second=0, microsecond=0)
         
-        f = {'dint': {'$gte':data_semanal, '$lte':data_hoje}}
+        f = {'d_obj': {'$gte': data_inicio, '$lte': data_fim}}
         filtro = list(money.find(f))
+
         for i in self.tabela_relatorio.get_children():
             self.tabela_relatorio.delete(i)
+
         for i in filtro:
             nome = i['nome']
             custo = i['$']
             data = i['data']
             qtd = i['quantidade']
-            self.tabela_relatorio.insert('', 'end', values=(nome, custo, data,qtd))
+            self.tabela_relatorio.insert('', 'end', values=(nome, custo, data, qtd))
 
     def filtro_mensal(self):
-        data = date.today()
-        data_strhj = data.strftime("%d%m%Y")
-        data = int(data_strhj)
-        f = {'dint': {'$eq':data}}
+        data_fim = datetime.now()
+        data_inicio = (data_fim - timedelta(days=30)).replace(hour=0, minute=0, second=0, microsecond=0)
+
+        f = {'d_obj': {'$gte': data_inicio, '$lte': data_fim}}
         filtro = list(money.find(f))
+
         for i in self.tabela_relatorio.get_children():
             self.tabela_relatorio.delete(i)
+
         for i in filtro:
             nome = i['nome']
             custo = i['$']
             data = i['data']
             qtd = i['quantidade']
-            self.tabela_relatorio.insert('', 'end', values=(nome, custo, data,qtd))
+            self.tabela_relatorio.insert('', 'end', values=(nome, custo, data, qtd))
 
     def filtro_todos(self):
-        data = date.today()
-        data_strhj = data.strftime("%d%m%Y")
-        data = int(data_strhj)
-        f = {'dint': {'$eq':data}}
-        filtro = list(money.find(f))
+        filtro = list(money.find())
         for i in self.tabela_relatorio.get_children():
             self.tabela_relatorio.delete(i)
         for i in filtro:
@@ -371,69 +369,66 @@ class RelatorioFrame(ttk.Frame):
 
 
     def geradorPlanilha(self):
-        #Vai calcular o passado anual,mensal.etc...
-        data_hoje = date.today()
-        data_sete_dias_atras = data_hoje - timedelta(days=7)
-        data_um_mes_atras = data_hoje - timedelta(days=30)
-        data_um_ano = data_hoje - timedelta(days=365)
-        data_strhj = data_hoje.strftime("%d%m%Y")
-        data_strmes = data_um_mes_atras.strftime("%d%m%Y")
-        data_strsemana = data_sete_dias_atras.strftime("%d%m%Y")
-        data_anual = data_um_ano.strftime("%d%m%Y")
+        data_hoje_fim = datetime.now()
+        data_hoje_inicio = data_hoje_fim.replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        data_s = (data_hoje_fim - timedelta(days=7)).replace(hour=0, minute=0, second=0, microsecond=0)
+        data_m = (data_hoje_fim - timedelta(days=30)).replace(hour=0, minute=0, second=0, microsecond=0)
+        data_a = (data_hoje_fim - timedelta(days=365)).replace(hour=0, minute=0, second=0, microsecond=0)
 
-        #Vai transformar em um numero inteiro para fazer o calculo
-        dataa = int(data_anual)
-        datahj = int(data_strhj)
-        datam = int(data_strmes)
-        datase = int(data_strsemana)
-
+        data_hoje_str = data_hoje_inicio.strftime('%d-%m-%Y')
+        data_s_str = data_s.strftime('%d-%m-%Y')
+        data_m_str = data_m.strftime('%d-%m-%Y')
+        data_a_str = data_a.strftime('%d-%m-%Y')
+        
         datafiltro = self.selected_option.get()
-        filtrados = []
+        f = {}
+        nome_arquivo = 'relatorio.xlsx'
 
         if datafiltro == 'diario':
-            f = {'dint': {'$eq':datahj }}
-            nome_arquivo = f'Controle_Vendas_diario_{data_hoje}.xlsx'
+            f = {'d_obj': {'$gte': data_hoje_inicio, '$lt': (data_hoje_inicio + timedelta(days=1))}}
+            nome_arquivo = f'Controle_Vendas_diario_{data_hoje_str}.xlsx'
         elif datafiltro =='semanal':
-            f = {'dint': {'$gte':datase, '$lte':datahj}}
-            nome_arquivo = f'Controle_Vendas_semanal_{data_sete_dias_atras}.xlsx'
-        elif datafiltro == 'mensal':  
-            f = {'dint': {'$gte':datam}}
-            nome_arquivo = f'Controle_Vendas_mensal_{data_um_mes_atras}.xlsx'
+            f = {'d_obj': {'$gte': data_s, '$lte': data_hoje_fim}}
+            nome_arquivo = f'Controle_Vendas_semanal_{data_s_str}_ate_{data_hoje_str}.xlsx'
+        elif datafiltro == 'mensal': 
+            f = {'d_obj': {'$gte': data_m, '$lte': data_hoje_fim}}
+            nome_arquivo = f'Controle_Vendas_mensal_{data_m_str}_ate_{data_hoje_str}.xlsx'
         elif datafiltro == 'anual':
-            f = {'dint': {'$lte': datahj}}
-            nome_arquivo = f'Controle_Vendas_anual_{data_um_ano}.xlsx'
-        if f:
-            filtrados = list(money.find(f))
-        else:
-            filtrados = []
-        df = pd.DataFrame(filtrados)
+            f = {'d_obj': {'$gte': data_a, '$lte': data_hoje_fim}}
+            nome_arquivo = f'Controle_Vendas_anual_{data_a_str}_ate_{data_hoje_str}.xlsx'
+        
+        if not f:
+            messagebox.showwarning("Atenção", "Por favor, selecione um período para o relatório.")
+            return
+        
+        filtrados = list(money.find(f))
+        
+        if not filtrados:
+            messagebox.showinfo("Sem dados", "Nenhum dado encontrado para o período selecionado.")
+            return
 
-        # 2. PREPARAÇÃO DOS DADOS PARA O NOVO TEMPLATE (A ponte entre os códigos)
+        df = pd.DataFrame(filtrados)
         
         mapeamento_colunas = {
             'data': 'Data',
             'nome': 'Nome',
-            '$': 'Valor da Venda'
-            # Adicione aqui outros mapeamentos se necessário, ex: 'id_venda': 'Nº da Venda'
+            '$': 'Valor da Venda',
+            'quantidade': 'Quantidade'
         }
         df.rename(columns=mapeamento_colunas, inplace=True)
-            
-        # Selecionando a ordem final das colunas que queremos na tabela
-        colunas_finais = ['Data', 'Nome', 'Valor da Venda', 'total']
-        # Filtra o dataframe para garantir que só existam as colunas desejadas e na ordem certa
+        
+        colunas_finais = ['Data', 'Nome', 'Valor da Venda', 'Quantidade']
+        
         df_final = df[[col for col in colunas_finais if col in df.columns]]
 
-        # Calculando os totais com base nos dados reais do banco
         total_vendas = df_final['Valor da Venda'].sum() if 'Valor da Venda' in df_final.columns else 0
 
-
-        # 3. CRIAÇÃO DA PLANILHA FORMATADA (Lógica do novo template)
         with pd.ExcelWriter(nome_arquivo, engine='xlsxwriter') as writer:
             
             workbook = writer.book
             worksheet = workbook.add_worksheet('Relatório')
 
-            # --- Definição de todos os formatos ---
             formato_titulo = workbook.add_format({'bold': True, 'font_size': 18, 'font_color': 'white', 'bg_color': '#2F5496', 'align': 'center', 'valign': 'vcenter'})
             formato_subtitulo = workbook.add_format({'bold': True, 'font_size': 11, 'bg_color': '#BDD7EE', 'align': 'center', 'valign': 'vcenter'})
             formato_label = workbook.add_format({'bold': True, 'font_size': 10, 'align': 'right'})
@@ -444,36 +439,38 @@ class RelatorioFrame(ttk.Frame):
             formato_painel_lateral = workbook.add_format({'bg_color': "#FFFFFF"})
             formato_data = workbook.add_format({'num_format': 'dd/mm/yyyy', 'align': 'left'})
             formato_moeda = workbook.add_format({'num_format': 'R$ #,##0.00'})
+            formato_quantidade = workbook.add_format({'align': 'center'})
 
-            # --- Desenhando o Layout ---
-            
-            # A. Painel Lateral
             worksheet.set_column('A:B', 0, formato_painel_lateral)
             worksheet.insert_image('A1', 'logoexcel.png', {'x_scale': 0.5, 'y_scale': 0.5, 'x_offset': 10, 'y_offset': 10})
 
-            # B. Títulos e Inputs
             worksheet.merge_range('C2:H3', 'CONTROLE DE VENDAS CAIXA CERTO', formato_titulo)
             worksheet.merge_range('C4:H4', 'Relatório de vendas', formato_subtitulo)
-            # C. Tabela Principal usando add_table() para estilo zebrado
+            
             (num_rows, num_cols) = df_final.shape
             headers = [{'header': col} for col in df_final.columns]
-            worksheet.add_table(10, 2, 10 + num_rows, 2 + num_cols - 1, {
-                'data': df_final.values.tolist(),
-                'columns': headers,
-                'style': 'Table Style Medium 9',
-                'header_row': True
-            })
             
-            # D. Totais
+            if num_rows > 0:
+                worksheet.add_table(10, 2, 10 + num_rows - 1, 2 + num_cols - 1, {
+                    'data': df_final.values.tolist(),
+                    'columns': headers,
+                    'style': 'Table Style Medium 9',
+                    'header_row': True
+                })
+            else:
+                 worksheet.merge_range(10, 2, 10, 2 + num_cols - 1, 'Nenhum dado encontrado', formato_input)
+
             linha_inicio_totais = 10 + num_rows + 2
             worksheet.write(f'D{linha_inicio_totais}', 'Total de Vendas:', formato_total_label)
-            worksheet.write(f'E{linha_inicio_totais}', total_vendas, formato_total_valor)           
-            # E. Ajustes Finais de Colunas
-            worksheet.set_column('C:C', 12, formato_data)  # Data
-            worksheet.set_column('D:D', 30)                # Nome
-            worksheet.set_column('E:E', 18, formato_moeda) # Valor da Venda
-            worksheet.set_column('F:F', 18, formato_moeda) # Comissão
+            worksheet.write(f'E{linha_inicio_totais}', total_vendas, formato_total_valor) 
+            
+            worksheet.set_column('C:C', 12, formato_data) 
+            worksheet.set_column('D:D', 30) 
+            worksheet.set_column('E:E', 18, formato_moeda)
+            worksheet.set_column('F:F', 12, formato_quantidade)
             worksheet.hide_gridlines(2)
+        
+        messagebox.showinfo("Sucesso", f"Relatório '{nome_arquivo}' gerado com sucesso!")
 
 
     def atualiza(self):
@@ -534,7 +531,6 @@ class ProdutosFrame(ttk.Frame):
         self.tabelap = ttk.Treeview(tabela_frame,columns=colunas,show='headings') 
         escrolar = ttk.Scrollbar(tabela_frame,orient='vertical')
 
-        #Config
         self.tabelap.config(yscrollcommand=escrolar.set)
         escrolar.config(command=self.tabelap.yview)
 
@@ -563,9 +559,7 @@ class ProdutosFrame(ttk.Frame):
         self.entry_editor = ttk.Entry(editar_box, width=20)
         self.entry_editor.grid(row=3, column=1, pady=2, sticky='ew')
 
-        #Confirmar
         ttk.Button(editar_box, text='Confirmar', command=self.editar, style='Green.TButton',cursor='hand2').grid(row=4, column=1, pady=5, sticky='w')
-        #Confirmar
 
         ttk.Label(delete_box, text='Nome:').grid(row=0, column=0, pady=0, sticky='ew')
         self.entry_exnome = ttk.Entry(delete_box)
@@ -612,7 +606,7 @@ class ProdutosFrame(ttk.Frame):
     def delete(self):
         nome = self.entry_exnome.get()
         messagebox_do_delete = messagebox.askokcancel(title='Confirmação', message='Deseja EXCLUIR o produto?')
-        if messagebox_do_delete == True:    
+        if messagebox_do_delete == True: 
             colecao.delete_one({'nome': nome})
             self.informacoesTabela()
             self.limparForms()
