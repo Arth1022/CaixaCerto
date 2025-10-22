@@ -588,6 +588,7 @@ class ProdutosFrame(ttk.Frame):
         valores = dadositem.get('values') 
         nome = valores[0]
         self.entry_enome.delete(0,tk.END)
+        self.entry_exnome.delete(0,tk.END)
         self.entry_enome.insert(0,nome)
         self.entry_exnome.insert(0,nome)
 
