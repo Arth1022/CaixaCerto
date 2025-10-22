@@ -64,16 +64,6 @@ O projeto utiliza bibliotecas externas que precisam ser instaladas:
 
 pip install pymongo ttkthemes tkcalendar pandas xlsxwriter
 
-
-Configuração do MongoDB
-O código utiliza uma string de conexão para o MongoDB Atlas:
-
-Python
-con = MongoClient('mongodb+srv://arth1022:H&soyam01@caixacerto.c4y3jgg.mongodb.net/')
-db = con.get_database("pizzaria")
-colecao = db.get_collection("produtos")
-money = db.get_collection("gastos/lucros")
-
 Execução
 Após a instalação das dependências e a configuração da conexão com o banco de dados, execute o arquivo principal:
 python AppMain.py
