@@ -1,87 +1,72 @@
-📊 Sistema CaixaCerto
+# Sistema CaixaCerto
 
-Um sistema de gestão de caixa desenvolvido em Python com Tkinter e MongoDB, que permite cadastrar produtos, registrar vendas/compras, acompanhar relatórios financeiros e exportar planilhas em Excel.
+![Python](https://img.shields.io/badge/Python-3.x-blue.svg)
+![Tkinter](https://img.shields.io/badge/GUI-Tkinter-yellowgreen.svg)
+![MongoDB](https://img.shields.io/badge/Database-MongoDB-green.svg)
+![PyMongo](https://img.shields.io/badge/Driver-PyMongo-lightgreen.svg)
+![Pandas](https://img.shields.io/badge/Data-Pandas-orange.svg)
+![XlsxWriter](https://img.shields.io/badge/Export-XlsxWriter-red.svg)
 
-🚀 Funcionalidades
+## 🎯 Sobre o Projeto
 
--Tela inicial (Home)
+O **Sistema CaixaCerto** é uma aplicação desktop desenvolvida em Python com a biblioteca Tkinter para interface gráfica, projetada para auxiliar no gerenciamento de vendas, lucros, gastos e produtos. O sistema utiliza o MongoDB como banco de dados para persistência dos dados e permite a geração de relatórios de desempenho em formato Excel (xlsx).
 
-Registrar vendas/compras rapidamente.
+É ideal para pequenos negócios, como pizzarias (conforme o nome do banco de dados no código), que necessitam de uma solução simples e eficiente para controle financeiro e de estoque/produtos.
 
-Visualizar resumo semanal de gastos, lucros e total.
+## ✨ Funcionalidades
 
--Cadastro de Produtos
+O sistema é dividido em quatro telas principais (Frames): Início, Relatório, Produtos e Cadastro.
 
-Adicionar novos produtos (entrada/saída).
+### 🏠 Início (`HomeFrame`)
+* **Adicionar Venda/Compra:** Registro rápido de movimentações financeiras (vendas ou gastos).
+* **Produto e Quantidade:** Insere o nome do produto cadastrado e a quantidade vendida/comprada. O valor é buscado automaticamente do cadastro de produtos.
+* **Data Automática:** Opção para usar a data e hora atuais ou inserir uma data específica.
+* **Resumo Semanal/Diário:** Exibe um resumo de *Gastos*, *Vendas (Lucros)* e *Total* do dia.
 
-Informar custo, descrição, pedido e data automática.
+### 📈 Relatório (`RelatorioFrame`)
+* **Visualização de Dados:** Exibe todas as movimentações financeiras em uma tabela (*Treeview*).
+* **Filtros de Período:** Permite filtrar a tabela por período:
+    * Diário
+    * Semanal
+    * Mensal
+    * Todas
+* **Resumo Geral:** Calcula e exibe o total de Gastos, Lucros (Vendas) e o Total Geral das movimentações registradas no banco de dados.
+* **Geração de Planilha Excel:** Exporta o relatório filtrado (Diário, Semanal, Mensal ou Anual) para um arquivo `.xlsx` usando as bibliotecas `pandas` e `xlsxwriter`, com formatação visual.
 
--Relatórios Gerenciais
+### 📦 Produtos (`ProdutosFrame`)
+* **Visualização de Produtos:** Lista todos os produtos cadastrados com Nome, Custo, Descrição e Pedido (campo de informação extra).
+* **Edição:** Permite selecionar um produto na lista e editar um campo específico (Nome, Custo/Gasto, Descrição, Pedido).
+* **Exclusão:** Permite deletar um produto pelo nome.
 
-Tabela de movimentações com gastos, lucros e totais.
+### 📝 Cadastro (`CadastroFrame`)
+* **Registro de Produtos:** Formulário para cadastrar novos itens.
+* **Tipo de Cadastro:** Define se o item é uma `Venda` (custo positivo/lucro) ou `Compra` (custo negativo/gasto).
+* **Campos:** Nome, Custo/Gasto, Descrição e Pedido.
 
-Exportação de relatórios em Excel (Diário, Semanal, Mensal, Anual).
+## ⚙️ Tecnologias Utilizadas
 
-Arquivos gerados com layout formatado (título, tabela e totais).
+* **Python 3.x:** Linguagem de programação principal.
+* **Tkinter:** Biblioteca padrão do Python para criação da Interface Gráfica (GUI).
+* **ttkthemes:** Usado para aplicar temas modernos (`arc`) ao Tkinter.
+* **MongoDB (PyMongo):** Banco de dados NoSQL utilizado para armazenar produtos e movimentações financeiras.
+* **Pandas:** Usado para manipulação e estruturação dos dados antes da exportação para Excel.
+* **tkcalendar (DateEntry):** Componente para seleção de datas.
 
--Gestão de Produtos
+## 🚀 Como Executar
 
-Listagem completa de produtos cadastrados.
+### Pré-requisitos
 
-Edição de informações (nome, custo, descrição, etc).
+Certifique-se de ter o Python 3.x instalado.
 
-Exclusão de registros.
+### 1. Instalação das Dependências
 
-🛠️ Tecnologias Utilizadas
+O projeto utiliza bibliotecas externas que precisam ser instaladas:
 
-Python 3.10+
+pip install pymongo ttkthemes tkcalendar pandas xlsxwriter
 
-Tkinter (Interface gráfica)
-
-ttkthemes (Estilização de interface)
-
-MongoDB Atlas (Banco de dados em nuvem)
-
-Pandas e XlsxWriter (Exportação para Excel)
-
-📦 Instalação
-
-Clone o repositório:
-
-git clone https://github.com/Arth1022/CaixaCerto.git
-
-cd CaixaCerto
-
-Instale as Bibliotecas
-pip install pymongo pandas xlsxwriter ttkthemes
-
-▶️ Uso
-
-Execute o programa com:
-
+Execução
+Após a instalação das dependências e a configuração da conexão com o banco de dados, execute o arquivo principal:
 python AppMain.py
 
-
-A janela principal do sistema será aberta com as opções: Início, Cadastro, Relatório e Produtos.
-
-📂 Estrutura do Projeto
-
-AppMain.py (Aplicativo Principal), README.md,  logoexcel.png 
-
-📊 Relatório Excel
-
-Geração automática de relatórios profissionais em Excel.
-
-Inclui logotipo, tabela formatada e totais de vendas.
-
-⚠️ Observações
-
-É necessário ter um banco de dados MongoDB Atlas configurado.
-
-Atualize a string de conexão no código (AppMain.py) com suas credenciais.
-
-O arquivo logoexcel.png precisa estar na pasta raiz para aparecer nos relatórios.
-
-👨‍💻 Autor
-
-Desenvolvido por Arthur
+🤝 Contribuições
+Este é um projeto universitário, mas contribuições, sugestões e relatórios de bugs são bem-vindos. Sinta-se à vontade para abrir uma issue ou um pull request.
