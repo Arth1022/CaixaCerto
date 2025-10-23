@@ -22,6 +22,8 @@ class HomeFrame(ttk.Frame):
         self.gasto_var = tk.StringVar()
         self.lucro_var = tk.StringVar()
         self.total_var = tk.StringVar()
+        self.custo_var = tk.StringVar()
+        self.combo_var = tk.StringVar()
 
         self.data_auto_var_home = tk.BooleanVar(value=True)
 
@@ -38,12 +40,18 @@ class HomeFrame(ttk.Frame):
 
         ttk.Label(text_frame, text="Seja Bem-vindo ao Sistema!", font=('Arial', 18, 'bold')).grid(row=0,column=0)
         
-        ttk.Label(add_box, text='Nome do Produto:').grid(row=0, column=0, sticky='w')
-        self.entry_nproduto = ttk.Entry(add_box, width=14)
-        self.entry_nproduto.grid(row=0,column=1, sticky='ew')
+        dados = list(colecao.find())
+        valores_nomes = []
+        for i in dados:
+            valores_nomes.append(i['nome'])
+        
+        ttk.Label(add_box,text='Nome:').grid(row=0, column=0,sticky='w')
+        self.escolher_combo = ttk.Combobox(add_box,textvariable=self.combo_var,values=valores_nomes,state='normal',width=10)
+        self.escolher_combo.grid(row=0, column=1, sticky='w')
+        ttk.Entry(add_box,width='5',state='readonly').grid(row=0,column=2,sticky='w' )
         
         ttk.Label(add_box,text="Quantidade:"). grid(row=1, column=0, sticky='w')
-        self.entry_qtd = ttk.Entry(add_box,width=14)
+        self.entry_qtd = ttk.Entry(add_box,width=5)
         self.entry_qtd.grid(row=1, column=1, sticky='ew')
         
         ttk.Label(add_box, text='Data:').grid(row=2, column=0, sticky='w')
