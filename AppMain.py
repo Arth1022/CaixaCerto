@@ -97,7 +97,7 @@ class HomeFrame(ttk.Frame):
 
     def getmoney(self):
         self.data_auto_var_home.get()
-        nomeadd = self.entry_nproduto.get()
+        nomeadd = self.combo_var.get()
         qtd = self.entry_qtd.get()
         qtd = int(qtd)
         produto = colecao.find_one({'nome': nomeadd})
