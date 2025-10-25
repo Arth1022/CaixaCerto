@@ -15,16 +15,16 @@ money = db.get_collection("gastos/lucros")
 class HomeFrame(ttk.Frame):
     def __init__(self, master, relatorio_frame, produtos_frame, **kwargs):
         super().__init__(master, **kwargs)
+        valores = self.atulizar_Combo()
 
         self.relatorio_frame = relatorio_frame
         self.produtos_frame = produtos_frame
-        
+
         self.gasto_var = tk.StringVar()
         self.lucro_var = tk.StringVar()
         self.total_var = tk.StringVar()
         self.custo_var = tk.StringVar()
         self.combo_var = tk.StringVar()
-
         self.data_auto_var_home = tk.BooleanVar(value=True)
 
         text_frame = ttk.Frame(self)
@@ -40,15 +40,12 @@ class HomeFrame(ttk.Frame):
 
         ttk.Label(text_frame, text="Seja Bem-vindo ao Sistema!", font=('Arial', 18, 'bold')).grid(row=0,column=0)
         
-        dados = list(colecao.find())
-        valores_nomes = []
-        for i in dados:
-            valores_nomes.append(i['nome'])
-        
         ttk.Label(add_box,text='Nome:').grid(row=0, column=0,sticky='w')
-        self.escolher_combo = ttk.Combobox(add_box,textvariable=self.combo_var,values=valores_nomes,state='normal',width=10)
+        self.escolher_combo = ttk.Combobox(add_box,textvariable=self.combo_var,values=valores,state='normal',width=10)
         self.escolher_combo.grid(row=0, column=1, sticky='w')
-        ttk.Entry(add_box,width='5',state='readonly').grid(row=0,column=2,sticky='w' )
+        self.custo = ttk.Entry(add_box,width='8')
+        self.custo.grid(row=0,column=2,sticky='w')
+        self.escolher_combo.bind('<<ComboboxSelected>>',self.selecionar_Combo)
         
         ttk.Label(add_box,text="Quantidade:"). grid(row=1, column=0, sticky='w')
         self.entry_qtd = ttk.Entry(add_box,width=5)
@@ -88,6 +85,22 @@ class HomeFrame(ttk.Frame):
         ttk.Label(total_frame,text='Total:',font=('Arial',12,'bold',),foreground='Blue').grid(row=0,column=0,pady=2)
         ttk.Label(total_frame,textvariable=self.total_var,font=('Arial',12,'bold',),foreground='Blue').grid(row=0,column=2,pady=2)
 
+    def atulizar_Combo(self):
+        dados = list(colecao.find())
+        valores_nomes = []                    #Não esta 100% Funcional, fiz apenas a logica
+        for i in dados:
+            valores_nomes.append(i['nome'])
+        return valores_nomes
+
+    def selecionar_Combo(self, event):
+        self.custo.config(state='normal')
+        self.custo.delete(0, tk.END)
+        item = self.combo_var.get()
+        dados = colecao.find_one({'nome': item})
+        custo = dados['custo']
+        self.custo.insert(0,'$:' + str(custo))
+        self.custo.config(state='readonly')
+
 
     def toggle_date_entry(self):
         if self.data_auto_var_home.get():
@@ -123,7 +136,7 @@ class HomeFrame(ttk.Frame):
         }
         money.insert_one(insert)
         self.calcula()
-        self.entry_nproduto.delete(0, tk.END)
+        self.custo.delete(0, tk.END)
         self.entry_qtd.delete(0,tk.END)
         self.relatorio_frame.atualiza()
 
