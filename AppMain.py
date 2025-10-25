@@ -139,7 +139,7 @@ class HomeFrame(ttk.Frame):
 
     def getmoney(self):
         self.data_auto_var_home.get()
-        nomeadd = self.entry_nproduto.get()
+        nomeadd = self.combo_var.get()
         qtd = self.entry_qtd.get()
         qtd = int(qtd)
         produto = colecao.find_one({'nome': nomeadd})
@@ -241,7 +241,8 @@ class CadastroFrame(ttk.Frame):
     def enviarDados(self):
         recebercusto = self.entry_custo.get()
         recebercusto = int(recebercusto)
-
+        
+        recebernome = self.entry_nome.get()
         recebertipo = self.entrada_var.get()
         receberdescri = self.entry_descricao.get()
         receberpedi = self.entry_pedido.get()
@@ -250,12 +251,12 @@ class CadastroFrame(ttk.Frame):
             custoreal = recebercusto
         elif recebertipo == 'compra':
             custoreal = recebercusto - (recebercusto * 2)
-        recebernome = self.entry_nome.get()
+        
         prod = {
-            'nome': recebernome,
+            'nome': recebernome.lower(),
             'custo': custoreal,
-            "descrição": receberdescri,
-            "pedido": receberpedi,
+            "descrição": receberdescri.lower(),
+            "pedido": receberpedi.lower(),
         }
         colecao.insert_one(prod)
         self.limparForms()
@@ -601,6 +602,7 @@ class ProdutosFrame(ttk.Frame):
         ttk.Label(editar_box, text='Nome:').grid(row=1, column=0, pady=2, sticky='w')
         self.entry_enome = ttk.Entry(editar_box)
         self.entry_enome.grid(row=1, column=1, pady=2, sticky='ew')
+
         ttk.Label(editar_box, text='Campo:').grid(row=2, column=0, pady=2, sticky='w')
         self.escolher_combo = ttk.Combobox(editar_box,textvariable=self.variavel_string_combo,values=['Nome','Custo/Gasto','Descrição','Pedido',],state='readonly')
         self.escolher_combo.grid(row=2,column=1,pady=2)
@@ -664,19 +666,24 @@ class ProdutosFrame(ttk.Frame):
 
     
     def editar(self):
-        nome = self.entry_enome.get().lower()
+        nome = self.entry_enome.get()
         campo = self.variavel_string_combo.get().lower()
         if campo == "custo/gasto":
             campo = 'custo'
-        editor = self.entry_editor.get().lower()
+        editor = self.entry_editor.get()
         messagebox_do_edit = messagebox.askokcancel(title='Confirmação', message='Deseja EDITAR o produto?')
         if messagebox_do_edit == True:
             if campo == 'custo':
-                editor = float(editor)
-            colecao.update_one({'nome': nome}, {"$set": {campo: editor}})
+                valor_final = float(editor)
+            else:
+                valor_final = editor.lower()
+            colecao.update_one(
+                    {'nome': nome},                 
+                    {"$set": {campo: valor_final}}  
+                )            
             self.informacoesTabela()
             self.limparForms()
-    
+            
     def limparForms(self):
         self.entry_enome.delete(0, tk.END)
         self.entry_editor.delete(0, tk.END)
