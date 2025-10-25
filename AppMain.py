@@ -55,11 +55,53 @@ class HomeFrame(ttk.Frame):
         self.entry_qtd.grid(row=1, column=1, sticky='ew')
         
         ttk.Label(add_box, text='Data:').grid(row=2, column=0, sticky='w')
+        
+        arc_bg = '#f0f0f0' 
+        arc_fg = '#333333'
+        arc_select_bg = '#0078d7'
+        arc_select_fg = '#ffffff'
+        arc_header_bg = '#e0e0e0'
+
+
+        calendar_options = {
+            'month_kw': {'takefocus': 0},
+            'year_kw': {'takefocus': 0},
+            
+            # --- Novas Cores ---
+            'background': arc_bg,             
+            'foreground': arc_fg,             
+            'headersbackground': arc_header_bg, 
+            'selectbackground': arc_select_bg, 
+            'selectforeground': arc_select_fg,  
+            'normalbackground': '#FFFFFF',        
+            'normalforeground': arc_fg,
+            'othermonthbackground': arc_bg,     
+            'othermonthforeground': '#999999',  
+            'weekendbackground': 'white',       
+            'weekendforeground': arc_fg
+        }
+        
         self.entry_data = DateEntry(add_box, 
-                                    width=12, 
-                                    date_pattern='dd/MM/yyyy', 
-                                    locale='pt_BR')
+                                     width=12, 
+                                     date_pattern='dd/MM/yyyy', 
+                                     locale='pt_BR',
+                                     # --- Alterações de Estilo ---
+                                     style='TEntry', # Faz o *campo de entrada* usar o estilo ttk
+                                     calendar_kwargs=calendar_options # Aplica as cores ao *calendário pop-up*
+                                     )
+        
         self.entry_data.grid(row=2, column=1, sticky='ew')
+
+        original_drop_down = self.entry_data.drop_down
+
+        def new_drop_down():
+            original_drop_down()
+            
+            if self.entry_data._top_cal:
+                self.entry_data._top_cal.unbind("<FocusOut>")
+
+        self.entry_data.drop_down = new_drop_down
+        
 
         self.check_data_auto = ttk.Checkbutton(add_box, 
                                                 text='Data Automática', 
@@ -654,6 +696,7 @@ class App(ThemedTk):
         style.configure('Green.TButton', foreground='green') 
         style.configure('Red.TButton', foreground='red')
         style.configure('Blue.TButton',foreground='blue')
+        
         
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)

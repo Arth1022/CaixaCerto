@@ -1,0 +1,5 @@
+    arc_bg = '#f0f0f0' 
+            arc_fg = '#333333'
+            arc_select_bg = '#0078d7'
+            arc_select_fg = '#ffffff'
+            arc_header_bg = '#e0e0e0'
