@@ -73,14 +73,8 @@ class HomeFrame(ttk.Frame):
         
         ttk.Label(add_box, text='Data:').grid(row=2, column=0, sticky='w')
         
-        arc_bg = '#f0f0f0' 
-        arc_fg = '#333333'
-        arc_select_bg = '#0078d7'
-        arc_select_fg = '#ffffff'
-        arc_header_bg = '#e0e0e0'
-
-
         calendar_options = {
+<<<<<<< Updated upstream
             'month_kw': {'takefocus': 0},
             'year_kw': {'takefocus': 0},
             'background': arc_bg,             
@@ -103,6 +97,28 @@ class HomeFrame(ttk.Frame):
                                      style='TEntry', 
                                      calendar_kwargs=calendar_options 
                                      )
+=======
+                            'background': 'yellow',            
+                            'foreground': 'black',            
+                            'selectbackground': 'red',         
+                            'selectforeground': 'white',       
+                            'normalbackground': 'white',       
+                            'normalforeground': 'black',       
+                            'headersbackground': 'cyan',       
+                            'headersforeground': 'black',      
+                            'weekendbackground': 'lightgreen', 
+                            'othermonthbackground': 'gray',
+                            'othermonthforeground': 'white'
+                        }
+        
+        self.entry_data = DateEntry(add_box, 
+                                width=12, 
+                                date_pattern='dd/MM/yyyy', 
+                                locale='pt_BR',
+                                style="DateEntry",
+                                calendar_kwargs=calendar_options
+                               )
+>>>>>>> Stashed changes
         
         self.entry_data.grid(row=2, column=1, sticky='ew')
 
@@ -809,7 +825,6 @@ class App(ThemedTk):
         style.configure('Green.TButton', foreground='green') 
         style.configure('Red.TButton', foreground='red')
         style.configure('Blue.TButton',foreground='blue')
-        
         
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
