@@ -6,11 +6,31 @@ from datetime import datetime, timedelta, date
 from tkinter import messagebox
 from tkcalendar import DateEntry
 import pandas as pd #pip install pandas xlsxwriter
+import hashlib
+import os
 
 con = MongoClient('mongodb+srv://arth1022:H&soyam01@caixacerto.c4y3jgg.mongodb.net/')
+
 db = con.get_database("pizzaria")
 colecao = db.get_collection("produtos")
 money = db.get_collection("gastos/lucros")
+
+user_db = con.get_database('user')
+usuario = db.get_collection('usuario')
+
+def hash_password(password, salt):
+    pwd_bytes = password.encode('utf-8')
+    salt_bytes = salt
+    hashed = hashlib.pbkdf2_hmac('sha256', pwd_bytes, salt_bytes, 100000)
+    return hashed
+
+def verify_password(stored_hash, stored_salt, provided_password):
+    hashed_attempt = hash_password(provided_password, stored_salt)
+    return hashed_attempt == stored_hash
+
+class LoginFrame(ttk.Frame):
+    def __init__(self,master, **kwargs):
+        super().__init__(master, **kwargs)
 
 class HomeFrame(ttk.Frame):
     def __init__(self, master, relatorio_frame, produtos_frame, **kwargs):
@@ -186,6 +206,7 @@ class HomeFrame(ttk.Frame):
         self.calcula()
         self.custo.delete(0, tk.END)
         self.entry_qtd.delete(0,tk.END)
+        self.escolher_combo.delete(0,tk.END)
         self.relatorio_frame.atualiza()
 
     def calcula(self):
