@@ -63,8 +63,6 @@ class HomeFrame(ttk.Frame):
         calendar_options = {
             'month_kw': {'takefocus': 0},
             'year_kw': {'takefocus': 0},
-            
-            # --- Novas Cores ---
             'background': arc_bg,             
             'foreground': arc_fg,             
             'headersbackground': arc_header_bg, 
@@ -82,9 +80,8 @@ class HomeFrame(ttk.Frame):
                                      width=12, 
                                      date_pattern='dd/MM/yyyy', 
                                      locale='pt_BR',
-                                     # --- Alterações de Estilo ---
-                                     style='TEntry', # Faz o *campo de entrada* usar o estilo ttk
-                                     calendar_kwargs=calendar_options # Aplica as cores ao *calendário pop-up*
+                                     style='TEntry', 
+                                     calendar_kwargs=calendar_options 
                                      )
         
         self.entry_data.grid(row=2, column=1, sticky='ew')
@@ -317,16 +314,16 @@ class RelatorioFrame(ttk.Frame):
         container_filtro = ttk.Frame(self)
         container_filtro.grid(row=1)
 
-        ttk.Label(self, text="       Relatório Gerencial", font=('Arial', 18, 'bold')).grid(row=0,column=0,sticky='we',columnspan='3')
+        ttk.Label(self, text="                              Relatório Gerencial", font=('Arial', 18, 'bold')).grid(row=0,column=0,sticky='we',columnspan='3')
 
-        self.button_diario = ttk.Button(container_filtro,text='Díario',command=self.filtro_diario)
-        self.button_diario.grid(row=0, column=0)
-        self.button_semanal = ttk.Button(container_filtro,text='Semanal',command=self.filtro_semanal)
-        self.button_semanal.grid(row=0, column=1)
-        self.button_mensal = ttk.Button(container_filtro,text='Mensal', command=self.filtro_mensal)
-        self.button_mensal.grid(row=0, column=2)
         self.button_todas = ttk.Button(container_filtro,text='Todas', command=self.filtro_todos)
-        self.button_todas.grid(row=0, column=3)
+        self.button_todas.grid(row=0, column=0)
+        self.button_diario = ttk.Button(container_filtro,text='Díario',command=self.filtro_diario)
+        self.button_diario.grid(row=0, column=1)
+        self.button_semanal = ttk.Button(container_filtro,text='Semanal',command=self.filtro_semanal)
+        self.button_semanal.grid(row=0, column=2)
+        self.button_mensal = ttk.Button(container_filtro,text='Mensal', command=self.filtro_mensal)
+        self.button_mensal.grid(row=0, column=3)
 
         colunas = ('nome','custo', 'data','quantidade')
         self.tabela_relatorio = ttk.Treeview(container_tabela,columns=colunas,show='headings' )
@@ -385,6 +382,22 @@ class RelatorioFrame(ttk.Frame):
             data = i['data']
             qtd = i['quantidade']
             self.tabela_relatorio.insert('', 'end', values=(nome, custo, data, qtd))
+        total = 0
+        lucro = 0
+        gasto = 0
+        for i in filtro:
+            valor = i.get('$')
+            total += valor
+            if valor < 0:
+                gasto += valor
+            else:
+                lucro += valor
+        self.int_lucro = lucro
+        self.int_gasto = gasto
+        self.int_total = total
+        self.gasto_var.set(f'R$ {self.int_gasto}')
+        self.lucro_var.set(f'R$ {self.int_lucro}')
+        self.total_var.set(f'R$ {self.int_total}')
 
     def filtro_semanal(self):
         data_fim = datetime.now()
@@ -402,6 +415,22 @@ class RelatorioFrame(ttk.Frame):
             data = i['data']
             qtd = i['quantidade']
             self.tabela_relatorio.insert('', 'end', values=(nome, custo, data, qtd))
+        total = 0
+        lucro = 0
+        gasto = 0
+        for i in filtro:
+            valor = i.get('$')
+            total += valor
+            if valor < 0:
+                gasto += valor
+            else:
+                lucro += valor
+        self.int_lucro = lucro
+        self.int_gasto = gasto
+        self.int_total = total
+        self.gasto_var.set(f'R$ {self.int_gasto}')
+        self.lucro_var.set(f'R$ {self.int_lucro}')
+        self.total_var.set(f'R$ {self.int_total}')
 
     def filtro_mensal(self):
         data_fim = datetime.now()
@@ -419,6 +448,22 @@ class RelatorioFrame(ttk.Frame):
             data = i['data']
             qtd = i['quantidade']
             self.tabela_relatorio.insert('', 'end', values=(nome, custo, data, qtd))
+        total = 0
+        lucro = 0
+        gasto = 0
+        for i in filtro:
+            valor = i.get('$')
+            total += valor
+            if valor < 0:
+                gasto += valor
+            else:
+                lucro += valor
+        self.int_lucro = lucro
+        self.int_gasto = gasto
+        self.int_total = total
+        self.gasto_var.set(f'R$ {self.int_gasto}')
+        self.lucro_var.set(f'R$ {self.int_lucro}')
+        self.total_var.set(f'R$ {self.int_total}')
 
     def filtro_todos(self):
         filtro = list(money.find())
@@ -430,6 +475,22 @@ class RelatorioFrame(ttk.Frame):
             data = i['data']
             qtd = i['quantidade']
             self.tabela_relatorio.insert('', 'end', values=(nome, custo, data,qtd))
+        total = 0
+        lucro = 0
+        gasto = 0
+        for i in filtro:
+            valor = i.get('$')
+            total += valor
+            if valor < 0:
+                gasto += valor
+            else:
+                lucro += valor
+        self.int_lucro = lucro
+        self.int_gasto = gasto
+        self.int_total = total
+        self.gasto_var.set(f'R$ {self.int_gasto}')
+        self.lucro_var.set(f'R$ {self.int_lucro}')
+        self.total_var.set(f'R$ {self.int_total}')
 
 
     def geradorPlanilha(self):
