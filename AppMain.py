@@ -142,6 +142,15 @@ class HomeFrame(ttk.Frame):
         custo = dados['custo']
         self.custo.insert(0,'$:' + str(custo))
         self.custo.config(state='readonly')
+        
+    def atualizar_combobox_items(self):
+        print("Aviso: Atualizando lista de produtos no Combobox...")
+        dados = list(colecao.find())
+        valores_nomes = []
+        for i in dados:
+            valores_nomes.append(i['nome'])
+        
+        self.escolher_combo.config(values=valores_nomes)    
 
 
     def toggle_date_entry(self):
@@ -206,11 +215,12 @@ class HomeFrame(ttk.Frame):
         self.total_var.set(f'R$ {self.int_total}')
 
 class CadastroFrame(ttk.Frame):
-    def __init__(self, master, relatorio_frame, produtos_frame, **kwargs):
+    def __init__(self, master, relatorio_frame, produtos_frame, home_frame, **kwargs):
         super().__init__(master, **kwargs)
 
         self.relatorio = relatorio_frame
         self.produtos = produtos_frame
+        self.home_frame = home_frame
         
         self.entrada_var = tk.StringVar()
         
@@ -278,6 +288,7 @@ class CadastroFrame(ttk.Frame):
 
         self.relatorio.atualiza()
         self.produtos.informacoesTabela()
+        self.home_frame.atualizar_combobox_items()
             
     def limparForms(self):
         self.entry_nome.delete(0, tk.END)
@@ -747,7 +758,8 @@ class App(ThemedTk):
         cadastro_frame = CadastroFrame(
             container, 
             relatorio_frame=relatorio_frame, 
-            produtos_frame=produtos_frame
+            produtos_frame=produtos_frame,
+            home_frame=home_frame,
         )
         
         self.frames['home'] = home_frame
