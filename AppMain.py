@@ -8,6 +8,8 @@ from tkcalendar import DateEntry
 import pandas as pd #pip install pandas xlsxwriter
 import hashlib
 import os
+from PIL import Image, ImageTk # pip install Pillow
+
 
 con = MongoClient('mongodb+srv://arth1022:H&soyam01@caixacerto.c4y3jgg.mongodb.net/')
 
@@ -74,30 +76,6 @@ class HomeFrame(ttk.Frame):
         ttk.Label(add_box, text='Data:').grid(row=2, column=0, sticky='w')
         
         calendar_options = {
-<<<<<<< Updated upstream
-            'month_kw': {'takefocus': 0},
-            'year_kw': {'takefocus': 0},
-            'background': arc_bg,             
-            'foreground': arc_fg,             
-            'headersbackground': arc_header_bg, 
-            'selectbackground': arc_select_bg, 
-            'selectforeground': arc_select_fg,  
-            'normalbackground': '#FFFFFF',        
-            'normalforeground': arc_fg,
-            'othermonthbackground': arc_bg,     
-            'othermonthforeground': '#999999',  
-            'weekendbackground': 'white',       
-            'weekendforeground': arc_fg
-        }
-        
-        self.entry_data = DateEntry(add_box, 
-                                     width=12, 
-                                     date_pattern='dd/MM/yyyy', 
-                                     locale='pt_BR',
-                                     style='TEntry', 
-                                     calendar_kwargs=calendar_options 
-                                     )
-=======
                             'background': 'yellow',            
                             'foreground': 'black',            
                             'selectbackground': 'red',         
@@ -118,7 +96,6 @@ class HomeFrame(ttk.Frame):
                                 style="DateEntry",
                                 calendar_kwargs=calendar_options
                                )
->>>>>>> Stashed changes
         
         self.entry_data.grid(row=2, column=1, sticky='ew')
 
@@ -831,9 +808,18 @@ class App(ThemedTk):
 
         sidebar = ttk.Frame(self, width=150)
         sidebar.grid(row=0, column=0, sticky="nsew")
-        sidebar.grid_rowconfigure(5, weight=1)
+        sidebar.grid_rowconfigure(6, weight=1) # Ajuste o row do weight
+
+        logo_original = Image.open("logo.png") # Certifique-se que 'logo.png' está na pasta
         
-        ttk.Label(sidebar, text="Caixa Certo", font=('Arial', 14, 'bold'),).grid(row=0, column=0, padx=10, pady=20)
+        logo_redimensionada = logo_original.resize((100, 100), Image.Resampling.LANCZOS)
+        
+        self.logo_tk = ImageTk.PhotoImage(logo_redimensionada)
+
+        logo_label = ttk.Label(sidebar, image=self.logo_tk)
+        logo_label.grid(row=0, column=0, padx=10, pady=(20, 10)) # Posição no topo
+
+        ttk.Label(sidebar, text="Caixa Certo", font=('Arial', 14, 'bold'),).grid(row=1, column=0, padx=10, pady=(0, 20)) # Movido para a linha 1
 
         container = ttk.Frame(self)
         container.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
@@ -867,17 +853,18 @@ class App(ThemedTk):
         for frame in self.frames.values():
             frame.grid(row=0, column=0, sticky="nsew")
         
+        # --- AJUSTE NA POSIÇÃO (ROW) DOS BOTÕES ---
         self.buttons['home'] = ttk.Button(sidebar, text="Início", command=lambda: self.show_frame("home"),cursor='hand2')
-        self.buttons['home'].grid(row=1, column=0, padx=10, pady=10, sticky="ew")
+        self.buttons['home'].grid(row=2, column=0, padx=10, pady=10, sticky="ew") # Movido para a linha 2
 
         self.buttons['relatorio'] = ttk.Button(sidebar, text="Relatório", command=lambda: self.show_frame("relatorio"),cursor='hand2')
-        self.buttons['relatorio'].grid(row=2, column=0, padx=10, pady=10, sticky="ew")
+        self.buttons['relatorio'].grid(row=3, column=0, padx=10, pady=10, sticky="ew") # Movido para a linha 3
 
         self.buttons['produtos'] = ttk.Button(sidebar, text="Produtos", command=lambda: self.show_frame("produtos"),cursor='hand2')
-        self.buttons['produtos'].grid(row=3, column=0, padx=10, pady=10, sticky="ew")
+        self.buttons['produtos'].grid(row=4, column=0, padx=10, pady=10, sticky="ew") # Movido para a linha 4
         
         self.buttons['cadastro'] = ttk.Button(sidebar, text="Cadastro", command=lambda: self.show_frame("cadastro"),cursor='hand2')
-        self.buttons['cadastro'].grid(row=4, column=0, padx=10, pady=10, sticky="ew")
+        self.buttons['cadastro'].grid(row=5, column=0, padx=10, pady=10, sticky="ew") # Movido para a linha 5
         
         self.show_frame("home")
 
