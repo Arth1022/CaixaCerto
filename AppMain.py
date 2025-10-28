@@ -33,6 +33,54 @@ def verify_password(stored_hash, stored_salt, provided_password):
 class LoginFrame(ttk.Frame):
     def __init__(self,master, **kwargs):
         super().__init__(master, **kwargs)
+<<<<<<< Updated upstream
+=======
+        self.master = master
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+        frame_principal = ttk.Frame(self)
+        frame_principal.grid(row=0,column=0,sticky='')
+
+        entry_login = ttk.Frame(frame_principal)
+        entry_login.grid(row=1,column=0)
+
+        logo_original = Image.open("logoexcel.png") 
+        logo_redimensionada = logo_original.resize((100, 100), Image.Resampling.LANCZOS)
+        self.logo_tk = ImageTk.PhotoImage(logo_redimensionada)
+        logo_label = ttk.Label(frame_principal, image=self.logo_tk)
+        logo_label.grid(row=0, column=0, padx=10, pady=(20, 10)) 
+
+        ttk.Label(entry_login,text = 'Usúario:',font=('Arial', 13, 'bold'),foreground='black').grid(row=1,column=0)
+        self.entry_username = ttk.Entry(entry_login,width=13) 
+        self.entry_username.grid(row=1,column=1)
+        
+        ttk.Label(entry_login,text = 'Senha:',font=('Arial', 13, 'bold'),foreground='black').grid(row=2,column=0)
+        self.entry_pw = ttk.Entry(entry_login,width=13,show='*') 
+        self.entry_pw.grid(row=2,column=1)
+
+        ttk.Button(frame_principal,text='Logar',command=self.login_usuario).grid(row=2,column=0,sticky='e')
+
+    def login_usuario(self):
+        username = self.entry_username.get()
+        password = self.entry_pw.get()
+
+        user_dados = user.find_one({'username': username})
+
+        if not user_dados:
+            messagebox.showerror(title='Erro ao logar',message='Este usúario não esta cadastrado!')
+            
+        password_bytes = password.encode('utf-8')
+
+        hash = user_dados['password_hashed']
+
+        if bcrypt.checkpw(password_bytes,hash):             
+            self.master.show_main_app()
+        else:
+            messagebox.showerror(title='Erro ao logar',message='Esta senha não existe!')
+
+>>>>>>> Stashed changes
 
 class HomeFrame(ttk.Frame):
     def __init__(self, master, relatorio_frame, produtos_frame, **kwargs):
@@ -150,7 +198,7 @@ class HomeFrame(ttk.Frame):
         item = self.combo_var.get()
         dados = colecao.find_one({'nome': item})
         custo = dados['custo']
-        self.custo.insert(0,'$:' + str(custo))
+        self.custo.insert(0,'$' + str(custo))
         self.custo.config(state='readonly')
         
     def atualizar_combobox_items(self):
@@ -828,9 +876,42 @@ class App(ThemedTk):
 
         self.frames = {}
         self.buttons = {}
+<<<<<<< Updated upstream
         
         relatorio_frame = RelatorioFrame(container)
         produtos_frame = ProdutosFrame(container,relatorio_frame=relatorio_frame)
+=======
+
+        self.login_frame = LoginFrame(self)
+        self.login_frame.grid(row=0, column=0, sticky='nsew')
+
+    def show_main_app(self):
+        self.login_frame.destroy()
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=0)
+        self.grid_columnconfigure(1, weight=1)
+
+        sidebar = ttk.Frame(self, width=150)
+        sidebar.grid(row=0, column=0, sticky="nsew")
+        sidebar.grid_rowconfigure(6, weight=1) 
+
+        logo_original = Image.open("logo.png") 
+        logo_redimensionada = logo_original.resize((100, 100), Image.Resampling.LANCZOS)
+        self.logo_tk = ImageTk.PhotoImage(logo_redimensionada)
+        logo_label = ttk.Label(sidebar, image=self.logo_tk)
+        logo_label.grid(row=0, column=0, padx=10, pady=(20, 10)) 
+        ttk.Label(sidebar, text="CAIXA CERTO", font=('Arial', 14, 'bold'),foreground='black').grid(row=1, column=0, padx=10, pady=(0, 20))
+
+        container = ttk.Frame(self)
+        container.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+
+        relatorio_frame = RelatorioFrame(container)
+        produtos_frame = ProdutosFrame(container,relatorio_frame=relatorio_frame)
+        
+>>>>>>> Stashed changes
         
         home_frame = HomeFrame(
             container, 
@@ -853,6 +934,7 @@ class App(ThemedTk):
         for frame in self.frames.values():
             frame.grid(row=0, column=0, sticky="nsew")
         
+<<<<<<< Updated upstream
         # --- AJUSTE NA POSIÇÃO (ROW) DOS BOTÕES ---
         self.buttons['home'] = ttk.Button(sidebar, text="Início", command=lambda: self.show_frame("home"),cursor='hand2')
         self.buttons['home'].grid(row=2, column=0, padx=10, pady=10, sticky="ew") # Movido para a linha 2
@@ -865,13 +947,30 @@ class App(ThemedTk):
         
         self.buttons['cadastro'] = ttk.Button(sidebar, text="Cadastro", command=lambda: self.show_frame("cadastro"),cursor='hand2')
         self.buttons['cadastro'].grid(row=5, column=0, padx=10, pady=10, sticky="ew") # Movido para a linha 5
+=======
+        self.buttons['home'] = ttk.Button(sidebar, text="Início", command=lambda: self.show_frame("home"),cursor='hand2')
+        self.buttons['home'].grid(row=2, column=0, padx=10, pady=10, sticky="ew") 
+
+        self.buttons['relatorio'] = ttk.Button(sidebar, text="Relatório", command=lambda: self.show_frame("relatorio"),cursor='hand2')
+        self.buttons['relatorio'].grid(row=3, column=0, padx=10, pady=10, sticky="ew") 
+
+        self.buttons['produtos'] = ttk.Button(sidebar, text="Produtos", command=lambda: self.show_frame("produtos"),cursor='hand2')
+        self.buttons['produtos'].grid(row=4, column=0, padx=10, pady=10, sticky="ew") 
+        
+        self.buttons['cadastro'] = ttk.Button(sidebar, text="Cadastro", command=lambda: self.show_frame("cadastro"),cursor='hand2')
+        self.buttons['cadastro'].grid(row=5, column=0, padx=10, pady=10, sticky="ew")
+>>>>>>> Stashed changes
         
         self.show_frame("home")
 
     def show_frame(self, page_name):
         frame = self.frames[page_name]
         frame.tkraise()
+<<<<<<< Updated upstream
         
+=======
+            
+>>>>>>> Stashed changes
         for name, button in self.buttons.items():
             if name == page_name:
                 button.state(['disabled'])
