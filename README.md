@@ -81,8 +81,8 @@ Este é um projeto universitário, mas contribuições, sugestões e relatórios
 
 Esse projeto é usado pelas seguintes empresas:
 
-- Quero Pizza
-
+- Quero Pizza Patos de Minas | R. dos Guaranís, 237 - Caramuru, Patos de Minas - MG, 38701-267 Telefone: (34) 3814-1234
+ 
 ## Licença
 
 [MIT](https://choosealicense.com/licenses/mit/)
