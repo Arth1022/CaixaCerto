@@ -25,6 +25,7 @@ class LoginFrame(ttk.Frame):
         self.master = master
 
         entry_login = ttk.Frame(self)
+        entry_login.grid(row=1,column=0)
 
         logo_original = Image.open("logoexcel.png") 
         logo_redimensionada = logo_original.resize((100, 100), Image.Resampling.LANCZOS)
