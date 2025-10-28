@@ -10,6 +10,7 @@ print('Conectado com sucesso!!')
 username = input('USERNAME:')
 password = input('SENHA:')
 password_confirm = input('SENHA:')
+empresa = input('EMPRESA:')
 
 if password != password_confirm:
     print('Senhas não colidem!')
@@ -25,8 +26,10 @@ hashed_password = bcrypt.hashpw(password_bytes,salt)
 user_dados = {
     "username": username,
     "password_hashed": hashed_password,
+    'empresa': empresa
 }
 user.insert_one(user_dados)
 print('Cadastrado com sucesso!')
+print('!!NÃO SE ESQUEÇA DE CRIAR A DB NO MONGODB!!')
 
 con.close()

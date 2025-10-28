@@ -15,9 +15,10 @@ con = MongoClient('mongodb+srv://arth1022:H&soyam01@caixacerto.c4y3jgg.mongodb.n
 user_db = con.get_database('user')
 user = user_db.get_collection('usuarios')
 
-db = con.get_database("pizzaria")
-colecao = db.get_collection("produtos")
-money = db.get_collection("gastos/lucros")
+db = None
+colecao = None
+money = None
+empresa = None
 
 class LoginFrame(ttk.Frame):
     def __init__(self,master, **kwargs):
@@ -53,7 +54,19 @@ class LoginFrame(ttk.Frame):
         username = self.entry_username.get()
         password = self.entry_pw.get()
 
+
         user_dados = user.find_one({'username': username})
+        empresa_nome = user_dados['empresa']
+
+        global db 
+        global colecao
+        global money
+        global empresa
+
+        db = con.get_database(empresa_nome)
+        colecao = db.get_collection("produtos")
+        money = db.get_collection("gastos/lucros")
+        empresa = empresa_nome
 
         if not user_dados:
             messagebox.showerror(title='Erro ao logar',message='Este usúario não esta cadastrado!')
@@ -94,7 +107,7 @@ class HomeFrame(ttk.Frame):
         add_box.columnconfigure(0,weight=1)
         add_box.columnconfigure(1,weight=1)
 
-        ttk.Label(text_frame, text="Seja Bem-vindo ao Sistema!", font=('Arial', 18, 'bold')).grid(row=0,column=0)
+        ttk.Label(text_frame, text=f"Seja Bem-vindo {empresa}!", font=('Arial', 18, 'bold')).grid(row=0,column=0)
         
         ttk.Label(add_box,text='Nome:').grid(row=0, column=0,sticky='w')
         self.escolher_combo = ttk.Combobox(add_box,textvariable=self.combo_var,values=valores,state='normal',width=10)
