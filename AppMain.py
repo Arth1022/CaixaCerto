@@ -6,9 +6,8 @@ from datetime import datetime, timedelta, date
 from tkinter import messagebox
 from tkcalendar import DateEntry
 import pandas as pd #pip install pandas xlsxwriter
-import hashlib
-import os
 from PIL import Image, ImageTk # pip install Pillow
+import bcrypt
 
 
 con = MongoClient('mongodb+srv://arth1022:H&soyam01@caixacerto.c4y3jgg.mongodb.net/')
@@ -20,21 +19,10 @@ money = db.get_collection("gastos/lucros")
 user_db = con.get_database('user')
 usuario = db.get_collection('usuario')
 
-def hash_password(password, salt):
-    pwd_bytes = password.encode('utf-8')
-    salt_bytes = salt
-    hashed = hashlib.pbkdf2_hmac('sha256', pwd_bytes, salt_bytes, 100000)
-    return hashed
-
-def verify_password(stored_hash, stored_salt, provided_password):
-    hashed_attempt = hash_password(provided_password, stored_salt)
-    return hashed_attempt == stored_hash
-
 class LoginFrame(ttk.Frame):
     def __init__(self,master, **kwargs):
         super().__init__(master, **kwargs)
-<<<<<<< Updated upstream
-=======
+        
         self.master = master
 
         self.grid_rowconfigure(0, weight=1)
@@ -79,8 +67,6 @@ class LoginFrame(ttk.Frame):
             self.master.show_main_app()
         else:
             messagebox.showerror(title='Erro ao logar',message='Esta senha não existe!')
-
->>>>>>> Stashed changes
 
 class HomeFrame(ttk.Frame):
     def __init__(self, master, relatorio_frame, produtos_frame, **kwargs):
@@ -187,7 +173,7 @@ class HomeFrame(ttk.Frame):
 
     def atulizar_Combo(self):
         dados = list(colecao.find())
-        valores_nomes = []                    #Não esta 100% Funcional, fiz apenas a logica
+        valores_nomes = []                    
         for i in dados:
             valores_nomes.append(i['nome'])
         return valores_nomes
@@ -856,18 +842,18 @@ class App(ThemedTk):
 
         sidebar = ttk.Frame(self, width=150)
         sidebar.grid(row=0, column=0, sticky="nsew")
-        sidebar.grid_rowconfigure(6, weight=1) # Ajuste o row do weight
+        sidebar.grid_rowconfigure(6, weight=1) 
 
-        logo_original = Image.open("logo.png") # Certifique-se que 'logo.png' está na pasta
+        logo_original = Image.open("logo.png") 
         
         logo_redimensionada = logo_original.resize((100, 100), Image.Resampling.LANCZOS)
         
         self.logo_tk = ImageTk.PhotoImage(logo_redimensionada)
 
         logo_label = ttk.Label(sidebar, image=self.logo_tk)
-        logo_label.grid(row=0, column=0, padx=10, pady=(20, 10)) # Posição no topo
+        logo_label.grid(row=0, column=0, padx=10, pady=(20, 10)) 
 
-        ttk.Label(sidebar, text="Caixa Certo", font=('Arial', 14, 'bold'),).grid(row=1, column=0, padx=10, pady=(0, 20)) # Movido para a linha 1
+        ttk.Label(sidebar, text="Caixa Certo", font=('Arial', 14, 'bold'),).grid(row=1, column=0, padx=10, pady=(0, 20))
 
         container = ttk.Frame(self)
         container.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
@@ -876,11 +862,9 @@ class App(ThemedTk):
 
         self.frames = {}
         self.buttons = {}
-<<<<<<< Updated upstream
         
         relatorio_frame = RelatorioFrame(container)
         produtos_frame = ProdutosFrame(container,relatorio_frame=relatorio_frame)
-=======
 
         self.login_frame = LoginFrame(self)
         self.login_frame.grid(row=0, column=0, sticky='nsew')
@@ -934,20 +918,18 @@ class App(ThemedTk):
         for frame in self.frames.values():
             frame.grid(row=0, column=0, sticky="nsew")
         
-<<<<<<< Updated upstream
-        # --- AJUSTE NA POSIÇÃO (ROW) DOS BOTÕES ---
         self.buttons['home'] = ttk.Button(sidebar, text="Início", command=lambda: self.show_frame("home"),cursor='hand2')
-        self.buttons['home'].grid(row=2, column=0, padx=10, pady=10, sticky="ew") # Movido para a linha 2
+        self.buttons['home'].grid(row=2, column=0, padx=10, pady=10, sticky="ew") 
 
         self.buttons['relatorio'] = ttk.Button(sidebar, text="Relatório", command=lambda: self.show_frame("relatorio"),cursor='hand2')
-        self.buttons['relatorio'].grid(row=3, column=0, padx=10, pady=10, sticky="ew") # Movido para a linha 3
+        self.buttons['relatorio'].grid(row=3, column=0, padx=10, pady=10, sticky="ew") 
 
         self.buttons['produtos'] = ttk.Button(sidebar, text="Produtos", command=lambda: self.show_frame("produtos"),cursor='hand2')
-        self.buttons['produtos'].grid(row=4, column=0, padx=10, pady=10, sticky="ew") # Movido para a linha 4
+        self.buttons['produtos'].grid(row=4, column=0, padx=10, pady=10, sticky="ew") 
         
         self.buttons['cadastro'] = ttk.Button(sidebar, text="Cadastro", command=lambda: self.show_frame("cadastro"),cursor='hand2')
-        self.buttons['cadastro'].grid(row=5, column=0, padx=10, pady=10, sticky="ew") # Movido para a linha 5
-=======
+        self.buttons['cadastro'].grid(row=5, column=0, padx=10, pady=10, sticky="ew") 
+
         self.buttons['home'] = ttk.Button(sidebar, text="Início", command=lambda: self.show_frame("home"),cursor='hand2')
         self.buttons['home'].grid(row=2, column=0, padx=10, pady=10, sticky="ew") 
 
@@ -959,18 +941,13 @@ class App(ThemedTk):
         
         self.buttons['cadastro'] = ttk.Button(sidebar, text="Cadastro", command=lambda: self.show_frame("cadastro"),cursor='hand2')
         self.buttons['cadastro'].grid(row=5, column=0, padx=10, pady=10, sticky="ew")
->>>>>>> Stashed changes
         
         self.show_frame("home")
 
     def show_frame(self, page_name):
         frame = self.frames[page_name]
         frame.tkraise()
-<<<<<<< Updated upstream
-        
-=======
-            
->>>>>>> Stashed changes
+
         for name, button in self.buttons.items():
             if name == page_name:
                 button.state(['disabled'])
