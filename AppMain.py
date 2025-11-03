@@ -707,12 +707,13 @@ class RelatorioFrame(ttk.Frame):
 
         
 class ProdutosFrame(ttk.Frame):
-    def __init__(self, master, relatorio_frame, **kwargs):
+    def __init__(self, master, relatorio_frame, home_frame, **kwargs):
         super().__init__(master, **kwargs)
 
         self.variavel_string_combo = tk.StringVar()
         
         self.relatorio_frame = relatorio_frame
+        self.home_frame = home_frame
         
         self.grid_columnconfigure(1, weight=1) 
 
@@ -809,6 +810,7 @@ class ProdutosFrame(ttk.Frame):
             colecao.delete_one({'nome': nome})
             self.informacoesTabela()
             self.limparForms()
+            self.home_frame.atualizar_combobox_items()
 
     
     def editar(self):
@@ -829,6 +831,7 @@ class ProdutosFrame(ttk.Frame):
                 )            
             self.informacoesTabela()
             self.limparForms()
+            self.home_frame.atualizar_combobox_items()
             
     def limparForms(self):
         self.entry_enome.delete(0, tk.END)
@@ -886,14 +889,21 @@ class App(ThemedTk):
         container.grid_columnconfigure(0, weight=1)
 
         relatorio_frame = RelatorioFrame(container)
-        produtos_frame = ProdutosFrame(container,relatorio_frame=relatorio_frame)
         
         
         home_frame = HomeFrame(
             container, 
             relatorio_frame=relatorio_frame, 
-            produtos_frame=produtos_frame
+            produtos_frame=None
         )
+        
+        produtos_frame = ProdutosFrame(
+            container, 
+            relatorio_frame=relatorio_frame, 
+            home_frame=home_frame
+        )
+        
+        home_frame.produtos_frame = produtos_frame
         
         cadastro_frame = CadastroFrame(
             container, 
