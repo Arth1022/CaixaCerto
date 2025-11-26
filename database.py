@@ -9,7 +9,7 @@ load_dotenv()
 
 class DatabaseManager:
     def __init__(self):
-        uri = (os.getenv('DB'))
+        uri = 'mongodb+srv://arth1022:H&soyam01@caixacerto.c4y3jgg.mongodb.net/'
         self.client = MongoClient(uri)
         self.user_db = self.client.get_database('user')
         self.users_collection = self.user_db.get_collection('usuarios')
@@ -376,9 +376,9 @@ class DatabaseManager:
             'd_obj': {'$gte': abertura},
             'pagamento': 'Dinheiro' 
         })
-        
-        for mov in movimentacoes:
-            saldo += mov.get('cust', 0)
+        mov_list = list(movimentacoes)
+        for mov in mov_list:
+            saldo += mov.get('valor_liquido', 0)
             
         return saldo
 

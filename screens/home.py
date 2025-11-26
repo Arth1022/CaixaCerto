@@ -337,8 +337,16 @@ class HomeScreen(ft.Column):
     
     def on_prod_change(self, e): c,e_q,t = self.db.get_product_details(self.dd_produtos.value); self.tf_custo_display.value=str(c); self.tf_estoque_display.value = "-" if t=='pizza' else str(e_q); self.update()
     
-    def change_date(self, e): self.date_picked = self.date_picker.value; self.txt_date.value = self.date_picked.strftime("%d/%m/%Y"); self.update()
-    
+    def change_date(self, e):
+        data_apenas = self.date_picker.value.date()
+        
+        hora_atual = datetime.now().time()
+        
+        self.date_picked = datetime.combine(data_apenas, hora_atual)
+        
+        self.txt_date.value = self.date_picked.strftime("%d/%m/%Y %H:%M")
+        self.update()
+            
     def show_snack(self, t, c): self.page_ref.open(ft.SnackBar(ft.Text(t), bgcolor=c)); self.page_ref.update()
    
     def _build_stat_card(self, t, v, i, c): return ft.Container(content=ft.Column([ft.Row([ft.Icon(i, color="white", size=30), ft.Text(t, color="white", weight="bold", size=18)]), ft.Text(v, size=24, color="white", weight="bold")]), bgcolor=c, padding=20, border_radius=15, width=300, height=120, shadow=ft.BoxShadow(blur_radius=5, color="black26"))
