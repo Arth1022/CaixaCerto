@@ -30,7 +30,7 @@
 <br />
 
 <h2 align="center">Tour pelo Sistema</h2>
-
+<i>O Botão roxo disponível em diversas telas, é utilizado para chamar a análise de IA.</i>
 <div id="caixa">
   <h3>1. Frente de Caixa (PDV) de Alta Performance</h3>
   <p>Projetada para agilidade. Permite busca rápida de produtos, Sessão dinâmica para MotoBoys e Delivery em geral, identificação de cliente via CPF/Celular e múltiplos métodos de pagamento. Interface limpa para evitar erros operacionais.</p>
@@ -89,6 +89,14 @@
   <div align="center">
     <img src="demo/relatorio.png" width="48%" style="border-radius: 8px;" alt="Relatório">
     <img src="demo/clientes.png" width="48%" style="border-radius: 8px;" alt="Clientes">
+  </div>
+</div>
+
+<div id="ia">
+  <h3>7. Exemplo de uma chamada de IA</h3>
+  <p>Use IA para analisar suas vendas, despesas e fluxo de clientes trazendo dicas, promoções e ajustes precisos que um ser humano não conseguira notar.</p>
+  <div align="center">
+    <img src="demo/ia.png" width="48%" style="border-radius: 8px;" alt="Relatório">
   </div>
 </div>
 
