@@ -21,11 +21,7 @@ class CadernoScreen(ft.Column):
         )
 
         self.controls = [
-            ft.Row([
-                ft.Text("Caderno de Caixa", size=30, weight="bold"),
-                ft.IconButton(ft.Icons.REFRESH, tooltip="Atualizar Saldo", on_click=lambda e: self.update_ui())
-            ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-            
+          
             self.container_principal,
             ft.Divider(),
             ft.Text("Histórico de Fechamentos", size=20, weight="bold"),
@@ -113,7 +109,6 @@ class CadernoScreen(ft.Column):
                     ft.Row([
                         ft.Icon(ft.Icons.CHECK_CIRCLE, color="green"),
                         ft.Text(f"Caixa ABERTO desde as {data_abertura}", color="green", weight="bold"),
-                        ft.IconButton(ft.Icons.REFRESH, icon_color="green", tooltip="Recalcular", on_click=lambda e: self.update_ui())
                     ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
                     
                     ft.Divider(),
