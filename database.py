@@ -9,7 +9,7 @@ load_dotenv()
 
 class DatabaseManager:
     def __init__(self):
-        uri = 'mongodb+srv://arth1022:H&soyam01@caixacerto.c4y3jgg.mongodb.net/'
+        uri = (os.getenv("DB"))
         self.client = MongoClient(uri)
         self.user_db = self.client.get_database('user')
         self.users_collection = self.user_db.get_collection('usuarios')
