@@ -145,9 +145,8 @@ class ProdutosScreen(ft.Column):
             
         self.db.update_product(nome, campo, valor)
         self.update_view()
-        self.show_snack(e, f"Produto '{nome}' atualizado!", "green")
-        
-        self.tf_valor.value = ""
+        self.tf_valor.value=""
+        self.show_snack(e, f"Produto '{nome}' atualizado!", "green");self.update()
 
     def abrir_confirmacao_exclusao(self, e):
         if not self.tf_nome.value:
