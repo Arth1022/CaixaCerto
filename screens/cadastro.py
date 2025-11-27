@@ -205,7 +205,7 @@ class CadastroScreen(ft.Column):
             uni = "un" if self.tipo_selecionado == "pizza" else self.dd_unidade.value
             rec = self.receita_atual if self.tipo_selecionado == "pizza" else []
             self.db.register_product(self.tf_nome.value, custo, self.tf_desc.value, self.tf_pedido.value, self.tipo_selecionado, uni, rec)
-            self.tf_nome.value=""; self.tf_custo.value=""; self.receita_atual=[]; self.lista_receita.controls.clear()
+            self.tf_nome.value=""; self.tf_custo.value=""; self.receita_atual=[]; self.lista_receita.controls.clear();self.tf_desc.value="";self.tf_pedido.value=""
             self.show_snack("Salvo!", "green"); self.update()
         except ValueError: pass
 
